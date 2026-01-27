@@ -5,6 +5,11 @@ on:
     # Run daily at 3:00 AM UTC
     - cron: '0 3 * * *'
   workflow_dispatch:  # Allow manual trigger
+  push:
+    branches:
+      - main
+    paths:
+      - 'anime_data.json'  # Also trigger if data file is modified
 
 jobs:
   update-data:
@@ -23,6 +28,23 @@ jobs:
         run: |
           pip install requests
           
+      - name: Check if data file is empty or missing
+        id: check_data
+        run: |
+          if [ ! -f anime_data.json ]; then
+            echo "Data file missing"
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+          elif [ ! -s anime_data.json ]; then
+            echo "Data file is empty"
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+          elif [ $(wc -c < anime_data.json) -lt 1000 ]; then
+            echo "Data file is too small (less than 1KB)"
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "Data file exists and has content"
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+          fi
+          
       - name: Run scraper
         run: |
           python scraper.py
@@ -32,8 +54,8 @@ jobs:
         run: |
           git diff --quiet anime_data.json || echo "changed=true" >> $GITHUB_OUTPUT
           
-      - name: Commit and push if changed
-        if: steps.check_changes.outputs.changed == 'true'
+      - name: Commit and push if changed or was empty
+        if: steps.check_changes.outputs.changed == 'true' || steps.check_data.outputs.needs_update == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"

@@ -94,11 +94,18 @@ class MALScraper:
         """Load data from JSON file"""
         try:
             with open(filename, 'r', encoding='utf-8') as f:
-                self.anime_data = json.load(f)
+                content = f.read().strip()
+                if not content or content == '[]' or content == '{}':
+                    print(f"File {filename} exists but is empty or invalid")
+                    return []
+                self.anime_data = json.loads(content)
             print(f"Loaded {len(self.anime_data)} anime from {filename}")
             return self.anime_data
         except FileNotFoundError:
             print(f"File {filename} not found")
+            return []
+        except json.JSONDecodeError:
+            print(f"File {filename} contains invalid JSON")
             return []
 
 def main():
