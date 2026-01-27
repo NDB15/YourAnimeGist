@@ -117,6 +117,16 @@ jobs:
           if [ -f anime_data.json.backup ]; then
             mv anime_data.json.backup anime_data.json
             echo "⚠️ Scraper or validation failed - restored previous data"
+            
+            # Check if restored backup is different from what's committed
+            if ! git diff --quiet anime_data.json; then
+              echo "Backup differs from committed version - will push restoration"
+              git config --local user.email "github-actions[bot]@users.noreply.github.com"
+              git config --local user.name "github-actions[bot]"
+              git add anime_data.json
+              git commit -m "⚠️ Restore previous valid data after failed update - $(date +'%Y-%m-%d %H:%M UTC')"
+              git push
+            fi
           fi
           
       - name: Remove backup on success
