@@ -41,8 +41,16 @@ jobs:
             echo "Data file is too small (less than 1KB)"
             echo "needs_update=true" >> $GITHUB_OUTPUT
           else
-            echo "Data file exists and has content"
-            echo "needs_update=false" >> $GITHUB_OUTPUT
+            # Check if we have at least 28000 anime
+            anime_count=$(python -c "import json; print(len(json.load(open('anime_data.json'))))" 2>/dev/null || echo "0")
+            echo "Current anime count: $anime_count"
+            if [ "$anime_count" -lt 28000 ]; then
+              echo "Anime count is below 28000, needs update"
+              echo "needs_update=true" >> $GITHUB_OUTPUT
+            else
+              echo "Data file exists and has sufficient content"
+              echo "needs_update=false" >> $GITHUB_OUTPUT
+            fi
           fi
           
       - name: Run scraper

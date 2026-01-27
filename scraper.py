@@ -91,9 +91,16 @@ class MALScraper:
         print("✅ All anime already have genre data from Jikan API!")
     
     def save_to_json(self, filename='anime_data.json'):
-        """Save scraped data to JSON file"""
-        with open(filename, 'w', encoding='utf-8') as f:
+        """Save scraped data to JSON file (atomic write using temp file)"""
+        import os
+        temp_filename = filename + '.tmp'
+        
+        # Write to temp file first
+        with open(temp_filename, 'w', encoding='utf-8') as f:
             json.dump(self.anime_data, f, indent=2, ensure_ascii=False)
+        
+        # Only replace main file when write is complete
+        os.replace(temp_filename, filename)
         print(f"Data saved to {filename}")
     
     def load_from_json(self, filename='anime_data.json'):
@@ -116,11 +123,28 @@ class MALScraper:
 
 def main():
     """Main function to fetch anime data"""
+    import sys
     scraper = MALScraper()
     
-    # Always fetch fresh data (no existing data check)
-    print("🚀 Fetching fresh anime data from Jikan API...")
+    # Check existing data count
+    existing_data = scraper.load_from_json()
+    existing_count = len(existing_data)
+    
+    # Only fetch if count is below threshold
+    MIN_ANIME_COUNT = 28000
+    if existing_count >= MIN_ANIME_COUNT:
+        print(f"✅ Already have {existing_count} anime (>= {MIN_ANIME_COUNT}). Skipping fetch.")
+        return
+    
+    # Fetch fresh data
+    print(f"🚀 Fetching fresh anime data from Jikan API... (current: {existing_count})")
     scraper.scrape_top_anime()  # No limit - fetch ALL anime
+    
+    # Only save if we got enough data
+    if len(scraper.anime_data) < MIN_ANIME_COUNT:
+        print(f"⚠️  Only fetched {len(scraper.anime_data)} anime (< {MIN_ANIME_COUNT}). NOT saving to avoid incomplete data.")
+        sys.exit(1)
+    
     scraper.save_to_json()
     print("✅ Done!")
     
