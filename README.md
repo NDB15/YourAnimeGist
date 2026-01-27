@@ -1,39 +1,39 @@
 # YourAnimeGist
 
-**Discover anime from MyAnimeList based on ratings and genres** - A fully autonomous, static anime discovery website with automatic daily updates.
+Discover anime from MyAnimeList based on ratings and genres. A static anime discovery website with automatic daily updates.
 
-## 🌟 Features
+## Features
 
-- 🎲 **Random Anime Picker** - Get a random anime suggestion based on your filters
-- 🔍 **Advanced Filtering** - Filter by rating range and multiple genres
-- 📊 **Complete Database** - Access to 10,000+ anime from MyAnimeList
-- 🎨 **BRC-Inspired Design** - Bomb Rush Cyberfunk aesthetic with video backgrounds and sound effects
-- 🤖 **Fully Autonomous** - Automatic daily updates via GitHub Actions
-- ⚡ **Zero Downtime** - Static site means no server downtime during updates
-- 📱 **Responsive Design** - Works on desktop and mobile devices
+- Random Anime Picker - Get a random anime suggestion based on your filters
+- Advanced Filtering - Filter by rating range and multiple genres
+- Complete Database - Access to 10,000+ anime from MyAnimeList
+- BRC-Inspired Design - Bomb Rush Cyberfunk aesthetic with video backgrounds and sound effects
+- Fully Autonomous - Automatic daily updates via GitHub Actions
+- Zero Downtime - Static site means no server downtime during updates
+- Responsive Design - Works on desktop and mobile devices
 
-## 🚀 Live Demo
+## Live Demo
 
-Visit the live site: **[Your GitHub Pages URL will go here]**
+Visit the live site: [Your GitHub Pages URL will go here]
 
-## 🏗️ Architecture
+## Architecture
 
-This project uses a **fully static architecture** optimized for GitHub Pages:
+This project uses a fully static architecture optimized for GitHub Pages:
 
-- **Frontend**: Pure HTML/CSS/JavaScript (no server needed)
-- **Data**: Client-side JSON loading for instant filtering
-- **Updates**: GitHub Actions runs scraper daily at 3 AM UTC
-- **Hosting**: GitHub Pages (free, fast, reliable)
+- Frontend: Pure HTML/CSS/JavaScript (no server needed)
+- Data: Client-side JSON loading for instant filtering
+- Updates: GitHub Actions runs scraper daily at 3 AM UTC
+- Hosting: GitHub Pages (free, fast, reliable)
 
 ### How It Works
 
-1. **GitHub Actions** runs `scraper.py` daily at 3 AM UTC
+1. GitHub Actions runs `scraper.py` daily at 3 AM UTC
 2. Scraper fetches all anime from Jikan API (MyAnimeList's unofficial API)
 3. Updated `anime_data.json` is committed to the repository
 4. GitHub Pages automatically deploys the updated site
-5. Users see fresh data after refreshing (no downtime!)
+5. Users see fresh data after refreshing (no downtime)
 
-## 📦 Deployment Instructions
+## Deployment Instructions
 
 ### Step 1: Fork or Clone This Repository
 
@@ -44,26 +44,26 @@ cd YourAnimeGist
 
 ### Step 2: Enable GitHub Actions
 
-1. Go to your repository **Settings** → **Actions** → **General**
-2. Under "Workflow permissions", select **Read and write permissions**
-3. Click **Save**
+1. Go to your repository Settings > Actions > General
+2. Under "Workflow permissions", select Read and write permissions
+3. Click Save
 
 ### Step 3: Enable GitHub Pages
 
-1. Go to **Settings** → **Pages**
-2. Under "Source", select **Deploy from a branch**
-3. Select **main** branch and **/ (root)** folder
-4. Click **Save**
+1. Go to Settings > Pages
+2. Under "Source", select Deploy from a branch
+3. Select main branch and / (root) folder
+4. Click Save
 
 ### Step 4: Run Initial Data Fetch
 
-**Option A: Trigger GitHub Action (Recommended)**
-1. Go to **Actions** tab
-2. Select **Update Anime Database** workflow
-3. Click **Run workflow** → **Run workflow**
+Option A: Trigger GitHub Action (Recommended)
+1. Go to Actions tab
+2. Select Update Anime Database workflow
+3. Click Run workflow > Run workflow
 4. Wait 2-4 hours for complete data fetch
 
-**Option B: Run Locally Then Push**
+Option B: Run Locally Then Push
 ```bash
 pip install requests
 python scraper.py
@@ -76,12 +76,12 @@ git push
 
 Your site will be live at: `https://YOUR_USERNAME.github.io/YourAnimeGist/`
 
-## 🔧 Local Development
+## Local Development
 
 ### Prerequisites
 
 - Python 3.9+
-- `requests` library
+- requests library
 
 ### Run Scraper Locally
 
@@ -105,7 +105,7 @@ python3 -m http.server 8000
 # Visit http://localhost:8000 in your browser
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 YourAnimeGist/
@@ -122,22 +122,22 @@ YourAnimeGist/
 └── README.md              # This file
 ```
 
-## 🤖 Automatic Updates
+## Automatic Updates
 
-The site automatically updates daily at **3:00 AM UTC** via GitHub Actions. The workflow:
+The site automatically updates daily at 3:00 AM UTC via GitHub Actions. The workflow:
 
 1. Runs `scraper.py` to fetch latest anime data
 2. Checks if data has changed
 3. Commits updated `anime_data.json` if changes detected
 4. GitHub Pages auto-deploys the update
 
-**Manual Trigger**: Go to **Actions** → **Update Anime Database** → **Run workflow**
+Manual Trigger: Go to Actions > Update Anime Database > Run workflow
 
-## 🎨 Customization
+## Customization
 
 ### Change Update Schedule
 
-Edit [.github/workflows/update-anime-data.yml](.github/workflows/update-anime-data.yml):
+Edit .github/workflows/update-anime-data.yml:
 
 ```yaml
 schedule:
@@ -146,37 +146,37 @@ schedule:
 
 ### Modify Styling
 
-Edit colors, fonts, and layout in the `<style>` section of [index.html](index.html).
+Edit colors, fonts, and layout in the `<style>` section of index.html.
 
 ### Add More Data Fields
 
 Modify `scraper.py` to include additional anime metadata from Jikan API.
 
-## 📊 Data Source
+## Data Source
 
-Data is fetched from **Jikan API v4** (unofficial MyAnimeList API):
+Data is fetched from Jikan API v4 (unofficial MyAnimeList API):
 - Endpoint: `https://api.jikan.moe/v4/anime`
-- Rate Limit: ~3 requests/second
+- Rate Limit: approximately 3 requests/second
 - Complete database fetch: 2-4 hours (10,000+ anime)
 
-## ⚠️ Important Notes
+## Important Notes
 
 ### Rate Limiting
-- Jikan API has rate limits (~3 requests/second)
+- Jikan API has rate limits (approximately 3 requests/second)
 - Scraper includes automatic backoff (1s delay, 5s on rate limit)
-- Full fetch takes 2-4 hours - **this is normal!**
+- Full fetch takes 2-4 hours
 
 ### GitHub Actions Minutes
 - Free tier: 2,000 minutes/month
-- Daily updates use ~30-120 minutes each
-- Estimate: ~900-3,600 minutes/month (within free tier)
+- Daily updates use approximately 30-120 minutes each
+- Estimate: approximately 900-3,600 minutes/month (within free tier)
 
 ### Data Freshness
 - Updates daily at 3 AM UTC
 - Users must refresh page to see updates
-- No automatic real-time updates (it's a static site)
+- No automatic real-time updates (static site)
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Site not loading data
 - Check if `anime_data.json` exists in repository
@@ -189,26 +189,22 @@ Data is fetched from **Jikan API v4** (unofficial MyAnimeList API):
 - May be Jikan API downtime (try again later)
 
 ### Slow initial load
-- Large `anime_data.json` (~1-5MB) takes time to download
+- Large `anime_data.json` (1-5MB) takes time to download
 - Consider compressing JSON or implementing pagination
 - Trade-off: Client-side filtering is instant after load
 
-## 📝 License
+## License
 
 This project uses data from MyAnimeList via the Jikan API. Please respect their terms of service and rate limits.
 
-## 🙏 Credits
+## Credits
 
-- **MyAnimeList** - Anime data source
-- **Jikan API** - Unofficial MAL REST API
-- **Bomb Rush Cyberfunk** - Visual inspiration and audio assets
+- MyAnimeList - Anime data source
+- Jikan API - Unofficial MAL REST API
+- Bomb Rush Cyberfunk - Visual inspiration and audio assets
 
-## 🔗 Links
+## Links
 
-- [Live Site](#) ← Add your GitHub Pages URL here
+- [Live Site](#)
 - [Jikan API Documentation](https://docs.api.jikan.moe/)
 - [MyAnimeList](https://myanimelist.net/)
-
----
-
-**Built with ❤️ for anime fans | Fully autonomous | Zero maintenance**
