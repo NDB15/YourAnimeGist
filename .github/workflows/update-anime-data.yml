@@ -2,9 +2,17 @@ name: Update Anime Database
 
 on:
   schedule:
-    # Run daily at 3:00 AM UTC
+    # Run daily at 3:00 AM UTC (incremental updates)
     - cron: '0 3 * * *'
+    # Run weekly on Sundays at 4:00 AM UTC (full refresh for ratings)
+    - cron: '0 4 * * 0'
   workflow_dispatch:  # Allow manual trigger
+    inputs:
+      force_full_refresh:
+        description: 'Force full refresh (updates all ratings)'
+        required: false
+        type: boolean
+        default: false
   push:
     branches:
       - main
@@ -64,6 +72,8 @@ jobs:
       - name: Run scraper
         id: run_scraper
         continue-on-error: true
+        env:
+          FORCE_FULL_REFRESH: ${{ github.event.inputs.force_full_refresh || 'false' }}
         run: |
           python scraper.py
           echo "scraper_exit_code=$?" >> $GITHUB_OUTPUT
