@@ -535,6 +535,7 @@
                     <button class="btn" onclick="filterAnime()">Show List</button>
                     <button class="btn" onclick="randomAnime()">Random Anime</button>
                     <button class="btn btn-secondary" onclick="selectAllGenres()">Select All</button>
+                    <button class="btn btn-secondary" onclick="clearGenres()">Clear Genres</button>
                     <button class="btn clear-filters" onclick="clearFilters()">Clear Filters</button>
                 </div>
             </div>
@@ -791,6 +792,11 @@
         // Select all genres
         function selectAllGenres() {
             document.querySelectorAll('#genreSelector input[type="checkbox"]').forEach(cb => cb.checked = true);
+        }
+
+        // Clear genres only
+        function clearGenres() {
+            document.querySelectorAll('#genreSelector input[type="checkbox"]').forEach(cb => cb.checked = false);
         }
 
         // Clear filters
