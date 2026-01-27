@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YourAnimeGist - MyAnimeList Discovery</title>
+    <style>
+        @font-face {
+            font-family: 'Induction';
+            src: url('https://fonts.cdnfonts.com/css/arial') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            background: transparent;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #fff;
+            line-height: 1.6;
+            position: relative;
+            background: #333;
+        }
+
+        /* Video background - mirrored sides */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -3;
+            display: flex;
+        }
+
+        .video-left {
+            width: 20vw;
+            height: 100vh;
+            object-fit: cover;
+            display: block;
+            will-change: transform;
+            backface-visibility: hidden;
+        }
+
+        .video-right {
+            width: 20vw;
+            height: 100vh;
+            object-fit: cover;
+            display: block;
+            transform: scaleX(-1);
+            margin-left: 60vw;
+            will-change: transform;
+            backface-visibility: hidden;
+        }
+
+        .container {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60vw;
+            height: 100vh;
+            z-index: 1;
+            overflow-y: auto;
+            overflow-x: visible;
+            border-left: 3px solid #8B7355;
+            border-right: 3px solid #8B7355;
+            will-change: transform;
+            contain: layout style paint;
+        }
+
+        .content-area {
+            background-color: #f5f0e6;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 42px;
+            color: #8B7355;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        .stats-bar {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .control-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #8B7355;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 24px rgba(139, 115, 85, 0.2);
+        }
+
+        .control-section {
+            margin-bottom: 25px;
+        }
+
+        .control-section h3 {
+            color: #8B7355;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .rating-selector {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .rating-range {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .rating-range label {
+            color: #666;
+            font-weight: bold;
+        }
+
+        .rating-range select {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: 2px solid #8B7355;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .rating-range select option {
+            background: #fff;
+            color: #333;
+        }
+
+        .genre-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .genre-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(139, 115, 85, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .genre-checkbox:hover {
+            background: rgba(255, 140, 0, 0.2);
+            transform: translateX(5px);
+        }
+
+        .genre-checkbox input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        .genre-checkbox label {
+            cursor: pointer;
+            color: #666;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #FF8C00, #FF7700);
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #FF7700, #FF6600);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #2e51a2, #1e3a8a);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #1e3a8a, #1e2a5a);
+        }
+
+        .results-container {
+            margin-top: 30px;
+        }
+
+        .results-header {
+            background: rgba(255, 140, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .results-header h2 {
+            color: #FF8C00;
+            font-size: 24px;
+        }
+
+        .anime-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .anime-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #8B7355;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .anime-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(139, 115, 85, 0.4);
+            border-color: #FF8C00;
+        }
+
+        .anime-card h3 {
+            color: #8B7355;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .anime-rating {
+            display: inline-block;
+            background: #FF8C00;
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .anime-info {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .anime-genres {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .genre-tag {
+            background: rgba(255, 140, 0, 0.2);
+            color: #FF8C00;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            border: 1px solid #FF8C00;
+        }
+
+        .random-result {
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.3), rgba(255, 119, 0, 0.2));
+            border: 3px solid #FF8C00;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .random-result h2 {
+            color: #FF8C00;
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 140, 0, 0.5);
+        }
+
+        .stats-bar {
+            background: rgba(255, 140, 0, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #FF8C00;
+        }
+
+        .loading {
+            text-align: center;
+            color: #FF8C00;
+            font-size: 20px;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 140, 0, 0.3);
+            border-top: 4px solid #FF8C00;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            color: #ff6666;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .clear-filters {
+            background: rgba(255, 255, 255, 0.1);
+            color: #FF8C00;
+            border: 2px solid #FF8C00;
+        }
+
+        .clear-filters:hover {
+            background: rgba(255, 140, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 100vw;
+                border: none;
+            }
+
+            .content-area {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            .anime-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mirrored video background -->
+    <div class="video-background">
+        <video autoplay muted loop playsinline class="video-left">
+            <source src="static/img/BRBackground.webm" type="video/webm">
+        </video>
+        <video autoplay muted loop playsinline class="video-right">
+            <source src="static/img/BRBackground.webm" type="video/webm">
+        </video>
+    </div>
+
+    <div class="container">
+        <div class="content-area">
+            <h1>YourAnimeGist</h1>
+            <div class="subtitle">Discover anime from MyAnimeList based on ratings and genres</div>
+
+            <div class="stats-bar" id="stats">
+                Loading anime database...
+            </div>
+
+            <div class="control-panel">
+                <div class="control-section">
+                    <h3>Rating Filter</h3>
+                    <div class="rating-selector">
+                        <div class="rating-range">
+                            <label>Min:</label>
+                            <select id="minRating">
+                                <option value="0" selected>Any</option>
+                                <option value="1">1+</option>
+                                <option value="2">2+</option>
+                                <option value="3">3+</option>
+                                <option value="4">4+</option>
+                                <option value="5">5+</option>
+                                <option value="6">6+</option>
+                                <option value="7">7+</option>
+                                <option value="8">8+</option>
+                                <option value="9">9+</option>
+                            </select>
+                        </div>
+                        <div class="rating-range">
+                            <label>Max:</label>
+                            <select id="maxRating">
+                                <option value="10" selected>Any</option>
+                                <option value="9">9</option>
+                                <option value="8">8</option>
+                                <option value="7">7</option>
+                                <option value="6">6</option>
+                                <option value="5">5</option>
+                                <option value="4">4</option>
+                                <option value="3">3</option>
+                                <option value="2">2</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>Genre Filter</h3>
+                    <div class="genre-selector" id="genreSelector">
+                        <!-- Genres will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn" onclick="filterAnime()">Show List</button>
+                    <button class="btn" onclick="randomAnime()">Random Anime</button>
+                    <button class="btn btn-secondary" onclick="selectAllGenres()">Select All</button>
+                    <button class="btn clear-filters" onclick="clearFilters()">Clear Filters</button>
+                </div>
+            </div>
+
+            <div id="randomResult"></div>
+
+            <div class="results-container" id="resultsContainer" style="display: none;">
+                <div class="results-header">
+                    <h2 id="resultsCount">0 anime found</h2>
+                </div>
+                <div class="anime-grid" id="animeGrid">
+                    <!-- Anime cards will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allAnimeData = [];
+        let availableGenres = [];
+        let lastUpdated = null;
+
+        // Load anime data from JSON file (client-side)
+        async function loadAnimeData() {
+            try {
+                const response = await fetch('anime_data.json');
+                allAnimeData = await response.json();
+                
+                // Extract unique genres
+                const genresSet = new Set();
+                allAnimeData.forEach(anime => {
+                    if (anime.genres && Array.isArray(anime.genres)) {
+                        anime.genres.forEach(genre => genresSet.add(genre));
+                    }
+                });
+                availableGenres = Array.from(genresSet).sort();
+                
+                loadGenres();
+                updateStats();
+                
+                return true;
+            } catch (error) {
+                console.error('Error loading anime data:', error);
+                document.getElementById('stats').innerHTML = 'Error loading anime database. Please refresh the page.';
+                return false;
+            }
+        }
+
+        // Load genres into UI
+        function loadGenres() {
+            const genreSelector = document.getElementById('genreSelector');
+            genreSelector.innerHTML = availableGenres.map(genre => `
+                <div class="genre-checkbox">
+                    <input type="checkbox" id="genre-${genre}" value="${genre}">
+                    <label for="genre-${genre}">${genre}</label>
+                </div>
+            `).join('');
+        }
+
+        // Update stats display
+        function updateStats() {
+            const totalAnime = allAnimeData.length;
+            const ratings = allAnimeData.map(a => parseFloat(a.rating)).filter(r => !isNaN(r));
+            const avgRating = ratings.length > 0 ? (ratings.reduce((a, b) => a + b, 0) / ratings.length) : 0;
+            const totalGenres = availableGenres.length;
+            
+            document.getElementById('stats').innerHTML = `
+                Total Anime: ${totalAnime.toLocaleString()} | 
+                Avg Rating: ${avgRating.toFixed(2)} | 
+                Genres: ${totalGenres}
+            `;
+        }
+
+        // Get selected genres
+        function getSelectedGenres() {
+            const checkboxes = document.querySelectorAll('#genreSelector input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        // Filter anime (client-side)
+        function filterAnime() {
+            const minRating = parseFloat(document.getElementById('minRating').value);
+            const maxRating = parseFloat(document.getElementById('maxRating').value);
+            const selectedGenres = getSelectedGenres();
+
+            document.getElementById('randomResult').innerHTML = '';
+            document.getElementById('resultsContainer').style.display = 'block';
+            document.getElementById('animeGrid').innerHTML = '<div class="loading"><div class="spinner"></div>Filtering anime...</div>';
+
+            // Client-side filtering
+            setTimeout(() => {
+                let filtered = allAnimeData.filter(anime => {
+                    const rating = parseFloat(anime.rating);
+                    if (isNaN(rating)) return false;
+                    if (rating < minRating || rating > maxRating) return false;
+                    
+                    // If genres selected, check if anime has at least one matching genre
+                    if (selectedGenres.length > 0) {
+                        if (!anime.genres || !Array.isArray(anime.genres)) return false;
+                        const hasMatchingGenre = selectedGenres.some(genre => 
+                            anime.genres.includes(genre)
+                        );
+                        if (!hasMatchingGenre) return false;
+                    }
+                    
+                    return true;
+                });
+
+                document.getElementById('resultsCount').textContent = `${filtered.length.toLocaleString()} anime found`;
+                
+                if (filtered.length === 0) {
+                    document.getElementById('animeGrid').innerHTML = '<div class="error-message">No anime found matching your criteria. Try adjusting your filters.</div>';
+                    return;
+                }
+
+                // Limit display to first 500 for performance
+                const displayLimit = 500;
+                const displayAnime = filtered.slice(0, displayLimit);
+                
+                if (filtered.length > displayLimit) {
+                    document.getElementById('resultsCount').textContent = `${filtered.length.toLocaleString()} anime found (showing first ${displayLimit})`;
+                }
+
+                document.getElementById('animeGrid').innerHTML = displayAnime.map(anime => createAnimeCard(anime)).join('');
+            }, 10);
+        }
+
+        // Random anime (client-side)
+        function randomAnime() {
+            const minRating = parseFloat(document.getElementById('minRating').value);
+            const maxRating = parseFloat(document.getElementById('maxRating').value);
+            const selectedGenres = getSelectedGenres();
+
+            document.getElementById('resultsContainer').style.display = 'none';
+            document.getElementById('randomResult').innerHTML = '<div class="loading"><div class="spinner"></div>Rolling the dice...</div>';
+
+            setTimeout(() => {
+                // Client-side filtering
+                let filtered = allAnimeData.filter(anime => {
+                    const rating = parseFloat(anime.rating);
+                    if (isNaN(rating)) return false;
+                    if (rating < minRating || rating > maxRating) return false;
+                    
+                    if (selectedGenres.length > 0) {
+                        if (!anime.genres || !Array.isArray(anime.genres)) return false;
+                        const hasMatchingGenre = selectedGenres.some(genre => 
+                            anime.genres.includes(genre)
+                        );
+                        if (!hasMatchingGenre) return false;
+                    }
+                    
+                    return true;
+                });
+
+                if (filtered.length === 0) {
+                    document.getElementById('randomResult').innerHTML = '<div class="error-message">No anime found matching your criteria. Try adjusting your filters.</div>';
+                    return;
+                }
+
+                const randomIndex = Math.floor(Math.random() * filtered.length);
+                const anime = filtered[randomIndex];
+                
+                document.getElementById('randomResult').innerHTML = `
+                    <div class="random-result">
+                        <h2>${anime.title}</h2>
+                        <div class="anime-rating">${anime.rating}</div>
+                        <div class="anime-info">${anime.type} | ${anime.episodes}</div>
+                        ${anime.genres && anime.genres.length > 0 ? `
+                            <div class="anime-genres">
+                                ${anime.genres.map(g => `<span class="genre-tag">${g}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                        <br><br>
+                        <a href="${anime.url}" target="_blank" class="btn">View on MyAnimeList</a>
+                    </div>
+                `;
+            }, 10);
+        }
+
+        // Create anime card HTML
+        function createAnimeCard(anime) {
+            return `
+                <div class="anime-card" onclick="window.open('${anime.url}', '_blank')">
+                    <h3>${anime.title}</h3>
+                    <div class="anime-rating">${anime.rating}</div>
+                    <div class="anime-info">${anime.type} | ${anime.episodes}</div>
+                    ${anime.genres && anime.genres.length > 0 ? `
+                        <div class="anime-genres">
+                            ${anime.genres.map(g => `<span class="genre-tag">${g}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Select all genres
+        function selectAllGenres() {
+            document.querySelectorAll('#genreSelector input[type="checkbox"]').forEach(cb => cb.checked = true);
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('minRating').value = '0';
+            document.getElementById('maxRating').value = '10';
+            document.querySelectorAll('#genreSelector input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.getElementById('resultsContainer').style.display = 'none';
+            document.getElementById('randomResult').innerHTML = '';
+        }
+
+        // Initialize
+        window.onload = async function() {
+            const loaded = await loadAnimeData();
+            if (loaded) {
+                setupSoundEffects();
+                // Load all anime by default
+                filterAnime();
+            }
+        };
+
+        // Sound effects setup
+        function setupSoundEffects() {
+            // Combo sounds for button clicks
+            const comboSounds = [
+                'static/sounds/combo1-CAB-519ac1be399ab2f6a6ea4b8fadf2e2d3--5268431922363868701.ogg',
+                'static/sounds/combo6-CAB-519ac1be399ab2f6a6ea4b8fadf2e2d3-1388961135375439648.ogg',
+                'static/sounds/combo7-CAB-519ac1be399ab2f6a6ea4b8fadf2e2d3--8362857525775888312.ogg',
+                'static/sounds/combo11-CAB-519ac1be399ab2f6a6ea4b8fadf2e2d3--3763815408416287802.ogg',
+                'static/sounds/combo12-CAB-519ac1be399ab2f6a6ea4b8fadf2e2d3-2623777169191283852.ogg'
+            ];
+
+            // Preload all combo sounds
+            const comboAudioObjects = comboSounds.map(soundPath => {
+                const audio = new Audio(soundPath);
+                audio.volume = 0.25;
+                audio.preload = 'auto';
+                return audio;
+            });
+
+            // Function to play random combo sound
+            function playRandomComboSound() {
+                const randomIndex = Math.floor(Math.random() * comboAudioObjects.length);
+                const soundToPlay = comboAudioObjects[randomIndex];
+                soundToPlay.currentTime = 0;
+                soundToPlay.play().catch(error => {
+                    console.log('Combo click audio play prevented:', error);
+                });
+            }
+
+            // Add click sound to all buttons
+            document.querySelectorAll('.btn').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    playRandomComboSound();
+                });
+            });
+
+            // Hover sounds
+            const hoverSound = new Audio('static/sounds/DJScratch.mp3');
+            hoverSound.volume = 0.25;
+            hoverSound.preload = 'auto';
+
+            document.querySelectorAll('.btn').forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    hoverSound.currentTime = 0;
+                    hoverSound.play().catch(error => {
+                        console.log('Hover audio play prevented:', error);
+                    });
+                });
+            });
+        }
+    </script>
+</body>
+</html>
