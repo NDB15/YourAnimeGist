@@ -42,6 +42,8 @@ Thumbs.db
 *.log
 nohup.out
 scraper.log
+scraper_output.txt
+scraper_*.log
 
 # Old files (keep the new structure)
 server.py
