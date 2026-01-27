@@ -1,0 +1,77 @@
+[
+  {
+    "title": "Cowboy Bebop",
+    "rating": 8.75,
+    "type": "TV",
+    "episodes": "26 eps",
+    "url": "https://myanimelist.net/anime/1/Cowboy_Bebop",
+    "genres": [
+      "Action",
+      "Award Winning",
+      "Sci-Fi"
+    ],
+    "mal_id": 1,
+    "year": 1998,
+    "image_url": "https://cdn.myanimelist.net/images/anime/4/19644l.jpg"
+  },
+  {
+    "title": "Cowboy Bebop: Tengoku no Tobira",
+    "rating": 8.38,
+    "type": "Movie",
+    "episodes": "1 eps",
+    "url": "https://myanimelist.net/anime/5/Cowboy_Bebop__Tengoku_no_Tobira",
+    "genres": [
+      "Action",
+      "Sci-Fi"
+    ],
+    "mal_id": 5,
+    "year": 2001,
+    "image_url": "https://cdn.myanimelist.net/images/anime/1439/93480l.jpg"
+  },
+  {
+    "title": "Trigun",
+    "rating": 8.22,
+    "type": "TV",
+    "episodes": "26 eps",
+    "url": "https://myanimelist.net/anime/6/Trigun",
+    "genres": [
+      "Action",
+      "Adventure",
+      "Sci-Fi"
+    ],
+    "mal_id": 6,
+    "year": 1998,
+    "image_url": "https://cdn.myanimelist.net/images/anime/1130/120002l.jpg"
+  },
+  {
+    "title": "Witch Hunter Robin",
+    "rating": 7.23,
+    "type": "TV",
+    "episodes": "26 eps",
+    "url": "https://myanimelist.net/anime/7/Witch_Hunter_Robin",
+    "genres": [
+      "Action",
+      "Drama",
+      "Mystery",
+      "Supernatural"
+    ],
+    "mal_id": 7,
+    "year": 2002,
+    "image_url": "https://cdn.myanimelist.net/images/anime/10/19969l.jpg"
+  },
+  {
+    "title": "Bouken Ou Beet",
+    "rating": 6.92,
+    "type": "TV",
+    "episodes": "52 eps",
+    "url": "https://myanimelist.net/anime/8/Bouken_Ou_Beet",
+    "genres": [
+      "Action",
+      "Adventure",
+      "Fantasy"
+    ],
+    "mal_id": 8,
+    "year": 2004,
+    "image_url": "https://cdn.myanimelist.net/images/anime/7/21569l.jpg"
+  }
+]
