@@ -102,13 +102,84 @@ class MALScraper:
                 print(f"Error fetching page {page}: {e}")
                 # If rate limited, wait longer and retry
                 if "429" in str(e) or "Too Many Requests" in str(e):
-                    print(f"Rate limited. Waiting 5 seconds before continuing...")
-                    time.sleep(5)
+                    print(f"Rate limited. Waiting 10 seconds before continuing...")
+                    time.sleep(10)
                     continue
                 break
         
         print(f"Successfully fetched {len(self.anime_data)} anime in seconds!")
         return self.anime_data
+    
+    def patch_missing_fields(self, batch_size=500, max_batches=None):
+        """Patch anime that are missing year or image_url data
+        
+        Args:
+            batch_size: Number of anime to patch per run
+            max_batches: Maximum batches to process (None = all)
+        """
+        print("🔧 Checking for anime with missing year or image data...")
+        
+        # Find anime missing year or image_url
+        needs_patch = [
+            anime for anime in self.anime_data 
+            if not anime.get('year') or not anime.get('image_url')
+        ]
+        
+        if not needs_patch:
+            print("✅ All anime have complete data!")
+            return 0
+        
+        total_to_patch = min(len(needs_patch), batch_size * (max_batches or float('inf')))
+        print(f"📊 Found {len(needs_patch)} anime with missing data")
+        print(f"🔄 Will patch {total_to_patch} anime this run...")
+        
+        patched_count = 0
+        for i, anime in enumerate(needs_patch[:total_to_patch]):
+            if not anime.get('mal_id'):
+                continue
+            
+            try:
+                # Fetch individual anime data
+                url = f"{self.base_url}/anime/{anime['mal_id']}"
+                response = requests.get(url)
+                response.raise_for_status()
+                
+                api_data = response.json()['data']
+                
+                # Patch year if missing
+                if not anime.get('year'):
+                    year = None
+                    if api_data.get('aired') and api_data['aired'].get('prop') and api_data['aired']['prop'].get('from'):
+                        year = api_data['aired']['prop']['from'].get('year')
+                    elif api_data.get('year'):
+                        year = api_data.get('year')
+                    if year:
+                        anime['year'] = year
+                
+                # Patch image_url if missing
+                if not anime.get('image_url'):
+                    if api_data.get('images') and api_data['images'].get('jpg'):
+                        image_url = api_data['images']['jpg'].get('large_image_url') or api_data['images']['jpg'].get('image_url', '')
+                        if image_url:
+                            anime['image_url'] = image_url
+                
+                patched_count += 1
+                if patched_count % 50 == 0:
+                    print(f"  Patched {patched_count}/{total_to_patch} anime...")
+                
+                # Slower rate limiting for individual requests
+                time.sleep(0.5)
+                
+            except Exception as e:
+                if "429" in str(e):
+                    print(f"  Rate limited at {patched_count}/{total_to_patch}, waiting 10 seconds...")
+                    time.sleep(10)
+                    continue
+                print(f"  ⚠️ Error patching {anime['title']}: {e}")
+                continue
+        
+        print(f"✅ Patched {patched_count} anime with missing data")
+        return patched_count
     
     def enrich_with_genres(self, limit=50):
         """Genres are already included from Jikan API - no additional work needed!"""
@@ -189,7 +260,14 @@ def main():
         if new_count > 0:
             print(f"✨ Found {new_count} new anime!")
         else:
-            print(f"✅ Database is up to date - no new anime to add")
+            print(f"✅ No new anime found")
+        
+        # Also patch missing year/image data in batches
+        print(f"\n🔧 Checking for missing year/image data...")
+        patched = scraper.patch_missing_fields(batch_size=500, max_batches=1)
+        
+        if new_count == 0 and patched == 0:
+            print(f"✅ Database is fully up to date - no changes needed")
             return  # No need to save if nothing changed
     
     scraper.save_to_json()
