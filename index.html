@@ -136,6 +136,38 @@
             font-size: 20px;
         }
 
+        .filters-row {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .filter-column {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .genre-logic-toggle {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .genre-logic-toggle label {
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .genre-logic-toggle input[type="radio"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
         .rating-selector {
             display: flex;
             gap: 15px;
@@ -438,62 +470,75 @@
             </div>
 
             <div class="control-panel">
-                <div class="control-section">
-                    <h3>Rating Filter</h3>
-                    <div class="rating-selector">
-                        <div class="rating-range">
-                            <label>Min:</label>
-                            <select id="minRating">
-                                <option value="0" selected>Any</option>
-                                <option value="1">1+</option>
-                                <option value="2">2+</option>
-                                <option value="3">3+</option>
-                                <option value="4">4+</option>
-                                <option value="5">5+</option>
-                                <option value="6">6+</option>
-                                <option value="7">7+</option>
-                                <option value="8">8+</option>
-                                <option value="9">9+</option>
-                            </select>
-                        </div>
-                        <div class="rating-range">
-                            <label>Max:</label>
-                            <select id="maxRating">
-                                <option value="10" selected>Any</option>
-                                <option value="9">9</option>
-                                <option value="8">8</option>
-                                <option value="7">7</option>
-                                <option value="6">6</option>
-                                <option value="5">5</option>
-                                <option value="4">4</option>
-                                <option value="3">3</option>
-                                <option value="2">2</option>
-                                <option value="1">1</option>
-                            </select>
+                <div class="filters-row">
+                    <div class="filter-column">
+                        <h3>Rating Filter</h3>
+                        <div class="rating-selector">
+                            <div class="rating-range">
+                                <label>Min:</label>
+                                <select id="minRating">
+                                    <option value="0" selected>Any (0.00+)</option>
+                                    <option value="1">1 (1.00-1.99)</option>
+                                    <option value="2">2 (2.00-2.99)</option>
+                                    <option value="3">3 (3.00-3.99)</option>
+                                    <option value="4">4 (4.00-4.99)</option>
+                                    <option value="5">5 (5.00-5.99)</option>
+                                    <option value="6">6 (6.00-6.99)</option>
+                                    <option value="7">7 (7.00-7.99)</option>
+                                    <option value="8">8 (8.00-8.99)</option>
+                                    <option value="9">9 (9.00-9.99)</option>
+                                </select>
+                            </div>
+                            <div class="rating-range">
+                                <label>Max:</label>
+                                <select id="maxRating">
+                                    <option value="10" selected>Any (up to 10)</option>
+                                    <option value="1">1 (0.00-1.99)</option>
+                                    <option value="2">2 (0.00-2.99)</option>
+                                    <option value="3">3 (0.00-3.99)</option>
+                                    <option value="4">4 (0.00-4.99)</option>
+                                    <option value="5">5 (0.00-5.99)</option>
+                                    <option value="6">6 (0.00-6.99)</option>
+                                    <option value="7">7 (0.00-7.99)</option>
+                                    <option value="8">8 (0.00-8.99)</option>
+                                    <option value="9">9 (0.00-9.99)</option>
+                                    <option value="10">10 (exactly 10)</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="control-section">
-                    <h3>Year Filter</h3>
-                    <div class="rating-selector">
-                        <div class="rating-range">
-                            <label>From:</label>
-                            <select id="minYear">
-                                <option value="0" selected>Any</option>
-                            </select>
-                        </div>
-                        <div class="rating-range">
-                            <label>To:</label>
-                            <select id="maxYear">
-                                <option value="9999" selected>Any</option>
-                            </select>
+                    <div class="filter-column">
+                        <h3>Year Filter</h3>
+                        <div class="rating-selector">
+                            <div class="rating-range">
+                                <label>From:</label>
+                                <select id="minYear">
+                                    <option value="0" selected>Any</option>
+                                </select>
+                            </div>
+                            <div class="rating-range">
+                                <label>To:</label>
+                                <select id="maxYear">
+                                    <option value="9999" selected>Any</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="control-section">
                     <h3>Genre Filter</h3>
+                    <div class="genre-logic-toggle">
+                        <label>
+                            <input type="radio" name="genreLogic" value="or" checked>
+                            OR (any genre matches)
+                        </label>
+                        <label>
+                            <input type="radio" name="genreLogic" value="and">
+                            AND (all genres must match)
+                        </label>
+                    </div>
                     <div class="genre-selector" id="genreSelector">
                         <!-- Genres will be loaded dynamically -->
                     </div>
@@ -602,6 +647,12 @@
             return Array.from(checkboxes).map(cb => cb.value);
         }
 
+        // Get genre logic (AND or OR)
+        function getGenreLogic() {
+            const selected = document.querySelector('input[name="genreLogic"]:checked');
+            return selected ? selected.value : 'or';
+        }
+
         // Filter anime (client-side)
         function filterAnime() {
             const minRating = parseFloat(document.getElementById('minRating').value);
@@ -629,13 +680,24 @@
                         return false; // Exclude anime without year if year filter is active
                     }
                     
-                    // If genres selected, check if anime has at least one matching genre
+                    // Genre filtering with AND/OR logic
                     if (selectedGenres.length > 0) {
                         if (!anime.genres || !Array.isArray(anime.genres)) return false;
-                        const hasMatchingGenre = selectedGenres.some(genre => 
-                            anime.genres.includes(genre)
-                        );
-                        if (!hasMatchingGenre) return false;
+                        const genreLogic = getGenreLogic();
+                        
+                        if (genreLogic === 'and') {
+                            // AND logic: anime must have ALL selected genres
+                            const hasAllGenres = selectedGenres.every(genre => 
+                                anime.genres.includes(genre)
+                            );
+                            if (!hasAllGenres) return false;
+                        } else {
+                            // OR logic: anime must have at least one selected genre
+                            const hasAnyGenre = selectedGenres.some(genre => 
+                                anime.genres.includes(genre)
+                            );
+                            if (!hasAnyGenre) return false;
+                        }
                     }
                     
                     return true;
