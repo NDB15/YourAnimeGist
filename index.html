@@ -6,8 +6,8 @@
     <title>YourAnimeGist - MyAnimeList Discovery</title>
     <style>
         @font-face {
-            font-family: 'Induction';
-            src: url('https://fonts.cdnfonts.com/css/arial') format('truetype');
+            font-family: 'AGRevue';
+            src: url('fonts/AGRevueCyr Roman Medium.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
@@ -28,7 +28,7 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'AGRevue', Arial, sans-serif;
             color: #fff;
             line-height: 1.6;
             position: relative;
@@ -475,6 +475,24 @@
                 </div>
 
                 <div class="control-section">
+                    <h3>Year Filter</h3>
+                    <div class="rating-selector">
+                        <div class="rating-range">
+                            <label>From:</label>
+                            <select id="minYear">
+                                <option value="0" selected>Any</option>
+                            </select>
+                        </div>
+                        <div class="rating-range">
+                            <label>To:</label>
+                            <select id="maxYear">
+                                <option value="9999" selected>Any</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
                     <h3>Genre Filter</h3>
                     <div class="genre-selector" id="genreSelector">
                         <!-- Genres will be loaded dynamically -->
@@ -505,6 +523,7 @@
     <script>
         let allAnimeData = [];
         let availableGenres = [];
+        let availableYears = [];
         let lastUpdated = null;
 
         // Load anime data from JSON file (client-side)
@@ -515,14 +534,20 @@
                 
                 // Extract unique genres
                 const genresSet = new Set();
+                const yearsSet = new Set();
                 allAnimeData.forEach(anime => {
                     if (anime.genres && Array.isArray(anime.genres)) {
                         anime.genres.forEach(genre => genresSet.add(genre));
                     }
+                    if (anime.year) {
+                        yearsSet.add(anime.year);
+                    }
                 });
                 availableGenres = Array.from(genresSet).sort();
+                availableYears = Array.from(yearsSet).sort((a, b) => a - b);
                 
                 loadGenres();
+                loadYears();
                 updateStats();
                 
                 return true;
@@ -542,6 +567,19 @@
                     <label for="genre-${genre}">${genre}</label>
                 </div>
             `).join('');
+        }
+
+        // Load years into dropdowns
+        function loadYears() {
+            const minYearSelect = document.getElementById('minYear');
+            const maxYearSelect = document.getElementById('maxYear');
+            
+            const yearOptions = availableYears.map(year => 
+                `<option value="${year}">${year}</option>`
+            ).join('');
+            
+            minYearSelect.innerHTML = '<option value="0" selected>Any</option>' + yearOptions;
+            maxYearSelect.innerHTML = '<option value="9999" selected>Any</option>' + yearOptions;
         }
 
         // Update stats display
@@ -568,6 +606,8 @@
         function filterAnime() {
             const minRating = parseFloat(document.getElementById('minRating').value);
             const maxRating = parseFloat(document.getElementById('maxRating').value);
+            const minYear = parseInt(document.getElementById('minYear').value);
+            const maxYear = parseInt(document.getElementById('maxYear').value);
             const selectedGenres = getSelectedGenres();
 
             document.getElementById('randomResult').innerHTML = '';
@@ -580,6 +620,14 @@
                     const rating = parseFloat(anime.rating);
                     if (isNaN(rating)) return false;
                     if (rating < minRating || rating > maxRating) return false;
+                    
+                    // Year filter
+                    if (anime.year) {
+                        if (minYear > 0 && anime.year < minYear) return false;
+                        if (maxYear < 9999 && anime.year > maxYear) return false;
+                    } else if (minYear > 0 || maxYear < 9999) {
+                        return false; // Exclude anime without year if year filter is active
+                    }
                     
                     // If genres selected, check if anime has at least one matching genre
                     if (selectedGenres.length > 0) {
@@ -616,6 +664,8 @@
         function randomAnime() {
             const minRating = parseFloat(document.getElementById('minRating').value);
             const maxRating = parseFloat(document.getElementById('maxRating').value);
+            const minYear = parseInt(document.getElementById('minYear').value);
+            const maxYear = parseInt(document.getElementById('maxYear').value);
             const selectedGenres = getSelectedGenres();
 
             document.getElementById('resultsContainer').style.display = 'none';
@@ -627,6 +677,14 @@
                     const rating = parseFloat(anime.rating);
                     if (isNaN(rating)) return false;
                     if (rating < minRating || rating > maxRating) return false;
+                    
+                    // Year filter
+                    if (anime.year) {
+                        if (minYear > 0 && anime.year < minYear) return false;
+                        if (maxYear < 9999 && anime.year > maxYear) return false;
+                    } else if (minYear > 0 || maxYear < 9999) {
+                        return false;
+                    }
                     
                     if (selectedGenres.length > 0) {
                         if (!anime.genres || !Array.isArray(anime.genres)) return false;
@@ -689,6 +747,8 @@
         function clearFilters() {
             document.getElementById('minRating').value = '0';
             document.getElementById('maxRating').value = '10';
+            document.getElementById('minYear').value = '0';
+            document.getElementById('maxYear').value = '9999';
             document.querySelectorAll('#genreSelector input[type="checkbox"]').forEach(cb => cb.checked = false);
             document.getElementById('resultsContainer').style.display = 'none';
             document.getElementById('randomResult').innerHTML = '';

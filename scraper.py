@@ -44,6 +44,13 @@ class MALScraper:
                     # Extract genres
                     genres = [g['name'] for g in anime.get('genres', [])]
                     
+                    # Extract year from aired data
+                    year = None
+                    if anime.get('aired') and anime['aired'].get('prop') and anime['aired']['prop'].get('from'):
+                        year = anime['aired']['prop']['from'].get('year')
+                    elif anime.get('year'):
+                        year = anime.get('year')
+                    
                     anime_info = {
                         'title': anime.get('title', 'Unknown'),
                         'rating': anime.get('score', 0.0) or 0.0,
@@ -51,7 +58,8 @@ class MALScraper:
                         'episodes': f"{anime.get('episodes', '?')} eps" if anime.get('episodes') else 'Unknown',
                         'url': anime.get('url', ''),
                         'genres': genres,
-                        'mal_id': anime.get('mal_id')
+                        'mal_id': anime.get('mal_id'),
+                        'year': year
                     }
                     
                     self.anime_data.append(anime_info)
