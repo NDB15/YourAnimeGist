@@ -126,25 +126,10 @@
             box-shadow: 0 8px 24px rgba(139, 115, 85, 0.2);
         }
 
-        .control-section {
-            margin-bottom: 25px;
-        }
-
-        .control-section h3 {
+        .control-panel h3 {
             color: #8B7355;
             margin-bottom: 15px;
             font-size: 20px;
-        }
-
-        .filters-row {
-            display: flex;
-            gap: 30px;
-            flex-wrap: wrap;
-        }
-
-        .filter-column {
-            flex: 1;
-            min-width: 300px;
         }
 
         .genre-logic-toggle {
@@ -358,6 +343,16 @@
             animation: fadeIn 0.5s ease;
         }
 
+        .random-result img {
+            max-width: 300px;
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 20px auto;
+            display: block;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.9); }
             to { opacity: 1; transform: scale(1); }
@@ -470,66 +465,59 @@
             </div>
 
             <div class="control-panel">
-                <div class="filters-row">
-                    <div class="filter-column">
-                        <h3>Rating Filter</h3>
-                        <div class="rating-selector">
-                            <div class="rating-range">
-                                <label>Min:</label>
-                                <select id="minRating">
-                                    <option value="0" selected>Any (0.00+)</option>
-                                    <option value="1">1 (1.00-1.99)</option>
-                                    <option value="2">2 (2.00-2.99)</option>
-                                    <option value="3">3 (3.00-3.99)</option>
-                                    <option value="4">4 (4.00-4.99)</option>
-                                    <option value="5">5 (5.00-5.99)</option>
-                                    <option value="6">6 (6.00-6.99)</option>
-                                    <option value="7">7 (7.00-7.99)</option>
-                                    <option value="8">8 (8.00-8.99)</option>
-                                    <option value="9">9 (9.00-9.99)</option>
-                                </select>
-                            </div>
-                            <div class="rating-range">
-                                <label>Max:</label>
-                                <select id="maxRating">
-                                    <option value="10" selected>Any (up to 10)</option>
-                                    <option value="1">1 (0.00-1.99)</option>
-                                    <option value="2">2 (0.00-2.99)</option>
-                                    <option value="3">3 (0.00-3.99)</option>
-                                    <option value="4">4 (0.00-4.99)</option>
-                                    <option value="5">5 (0.00-5.99)</option>
-                                    <option value="6">6 (0.00-6.99)</option>
-                                    <option value="7">7 (0.00-7.99)</option>
-                                    <option value="8">8 (0.00-8.99)</option>
-                                    <option value="9">9 (0.00-9.99)</option>
-                                    <option value="10">10 (exactly 10)</option>
-                                </select>
-                            </div>
-                        </div>
+                <h3>Rating Filter</h3>
+                <div class="rating-selector">
+                    <div class="rating-range">
+                        <label>Min:</label>
+                        <select id="minRating">
+                            <option value="0" selected>Any (0.00+)</option>
+                            <option value="1">1 (1.00-1.99)</option>
+                            <option value="2">2 (2.00-2.99)</option>
+                            <option value="3">3 (3.00-3.99)</option>
+                            <option value="4">4 (4.00-4.99)</option>
+                            <option value="5">5 (5.00-5.99)</option>
+                            <option value="6">6 (6.00-6.99)</option>
+                            <option value="7">7 (7.00-7.99)</option>
+                            <option value="8">8 (8.00-8.99)</option>
+                            <option value="9">9 (9.00-9.99)</option>
+                        </select>
                     </div>
-
-                    <div class="filter-column">
-                        <h3>Year Filter</h3>
-                        <div class="rating-selector">
-                            <div class="rating-range">
-                                <label>From:</label>
-                                <select id="minYear">
-                                    <option value="0" selected>Any</option>
-                                </select>
-                            </div>
-                            <div class="rating-range">
-                                <label>To:</label>
-                                <select id="maxYear">
-                                    <option value="9999" selected>Any</option>
-                                </select>
-                            </div>
-                        </div>
+                    <div class="rating-range">
+                        <label>Max:</label>
+                        <select id="maxRating">
+                            <option value="10" selected>Any (up to 10)</option>
+                            <option value="1">1 (0.00-1.99)</option>
+                            <option value="2">2 (0.00-2.99)</option>
+                            <option value="3">3 (0.00-3.99)</option>
+                            <option value="4">4 (0.00-4.99)</option>
+                            <option value="5">5 (0.00-5.99)</option>
+                            <option value="6">6 (0.00-6.99)</option>
+                            <option value="7">7 (0.00-7.99)</option>
+                            <option value="8">8 (0.00-8.99)</option>
+                            <option value="9">9 (0.00-9.99)</option>
+                            <option value="10">10 (exactly 10)</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="control-section">
-                    <h3>Genre Filter</h3>
-                    <div class="genre-logic-toggle">
+                <h3>Year Filter</h3>
+                <div class="rating-selector">
+                    <div class="rating-range">
+                        <label>From:</label>
+                        <select id="minYear">
+                            <option value="0" selected>Any</option>
+                        </select>
+                    </div>
+                    <div class="rating-range">
+                        <label>To:</label>
+                        <select id="maxYear">
+                            <option value="9999" selected>Any</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h3>Genre Filter</h3>
+                <div class="genre-logic-toggle">
                         <label>
                             <input type="radio" name="genreLogic" value="or" checked>
                             OR (any genre matches)
@@ -542,7 +530,6 @@
                     <div class="genre-selector" id="genreSelector">
                         <!-- Genres will be loaded dynamically -->
                     </div>
-                </div>
 
                 <div class="action-buttons">
                     <button class="btn" onclick="filterAnime()">Show List</button>
@@ -770,6 +757,7 @@
                 document.getElementById('randomResult').innerHTML = `
                     <div class="random-result">
                         <h2>${anime.title}</h2>
+                        ${anime.image_url ? `<img src="${anime.image_url}" alt="${anime.title}" onerror="this.style.display='none'">` : ''}
                         <div class="anime-rating">${anime.rating}</div>
                         <div class="anime-info">${anime.type} | ${anime.episodes}</div>
                         ${anime.genres && anime.genres.length > 0 ? `

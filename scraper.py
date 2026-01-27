@@ -51,6 +51,11 @@ class MALScraper:
                     elif anime.get('year'):
                         year = anime.get('year')
                     
+                    # Extract image URL
+                    image_url = ''
+                    if anime.get('images') and anime['images'].get('jpg'):
+                        image_url = anime['images']['jpg'].get('large_image_url') or anime['images']['jpg'].get('image_url', '')
+                    
                     anime_info = {
                         'title': anime.get('title', 'Unknown'),
                         'rating': anime.get('score', 0.0) or 0.0,
@@ -59,7 +64,8 @@ class MALScraper:
                         'url': anime.get('url', ''),
                         'genres': genres,
                         'mal_id': anime.get('mal_id'),
-                        'year': year
+                        'year': year,
+                        'image_url': image_url
                     }
                     
                     self.anime_data.append(anime_info)
