@@ -53,17 +53,88 @@ jobs:
             fi
           fi
           
+      - name: Backup current data file
+        if: always()
+        run: |
+          if [ -f anime_data.json ]; then
+            cp anime_data.json anime_data.json.backup
+            echo "Backed up existing data file"
+          fi
+          
       - name: Run scraper
+        id: run_scraper
+        continue-on-error: true
         run: |
           python scraper.py
+          echo "scraper_exit_code=$?" >> $GITHUB_OUTPUT
+          
+      - name: Validate new data
+        id: validate
+        if: steps.run_scraper.outcome == 'success'
+        run: |
+          echo "Validating new data..."
+          python << 'EOF'
+          import json
+          import sys
+          
+          try:
+              # Load and validate the new data
+              with open('anime_data.json', 'r') as f:
+                  data = json.load(f)
+              
+              # Check minimum count
+              if len(data) < 28000:
+                  print(f"❌ Validation failed: Only {len(data)} anime (need >= 28000)")
+                  sys.exit(1)
+              
+              # Check structure of first few items
+              required_fields = ['title', 'rating', 'type', 'url', 'genres', 'mal_id']
+              for i, anime in enumerate(data[:5]):
+                  for field in required_fields:
+                      if field not in anime:
+                          print(f"❌ Validation failed: Missing field '{field}' in anime {i}")
+                          sys.exit(1)
+              
+              # Check for valid JSON structure
+              if not isinstance(data, list):
+                  print(f"❌ Validation failed: Data is not a list")
+                  sys.exit(1)
+              
+              print(f"✅ Validation passed: {len(data)} anime with correct structure")
+              sys.exit(0)
+              
+          except json.JSONDecodeError as e:
+              print(f"❌ Validation failed: Invalid JSON - {e}")
+              sys.exit(1)
+          except Exception as e:
+              print(f"❌ Validation failed: {e}")
+              sys.exit(1)
+          EOF
+          
+      - name: Restore backup on validation failure
+        if: steps.validate.outcome == 'failure' || steps.run_scraper.outcome == 'failure'
+        run: |
+          if [ -f anime_data.json.backup ]; then
+            mv anime_data.json.backup anime_data.json
+            echo "⚠️ Scraper or validation failed - restored previous data"
+          fi
+          
+      - name: Remove backup on success
+        if: steps.validate.outcome == 'success'
+        run: |
+          if [ -f anime_data.json.backup ]; then
+            rm anime_data.json.backup
+            echo "✅ Validation passed - removed backup"
+          fi
           
       - name: Check if data changed
         id: check_changes
+        if: steps.validate.outcome == 'success'
         run: |
           git diff --quiet anime_data.json || echo "changed=true" >> $GITHUB_OUTPUT
           
-      - name: Commit and push if changed or was empty
-        if: steps.check_changes.outputs.changed == 'true' || steps.check_data.outputs.needs_update == 'true'
+      - name: Commit and push if validation passed and data changed
+        if: steps.validate.outcome == 'success' && (steps.check_changes.outputs.changed == 'true' || steps.check_data.outputs.needs_update == 'true')
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
