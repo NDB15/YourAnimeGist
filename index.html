@@ -901,62 +901,10 @@
         window.onload = async function() {
             const loaded = await loadAnimeData();
             if (loaded) {
-                setupSoundEffects();
                 // Load all anime by default
                 filterAnime();
             }
         };
-
-        // Sound effects setup
-        function setupSoundEffects() {
-            // Combo sounds for button clicks
-            const comboSounds = [
-                'static/sounds/combo1-CAB-519ac1be399ab2f6a6ea4b8fadf2e2d3--5268431922363868701.ogg',
-                'static/sounds/combo6-CAB-519ac1be399ab2f6a6ea4b8fadf2e2d3-1388961135375439648.ogg',
-                'static/sounds/combo7-CAB-519ac1be399ab2f6a6ea4b8fadf2e2d3--8362857525775888312.ogg',
-                'static/sounds/combo11-CAB-519ac1be399ab2f6a6ea4b8fadf2e2d3--3763815408416287802.ogg',
-                'static/sounds/combo12-CAB-519ac1be399ab2f6a6ea4b8fadf2e2d3-2623777169191283852.ogg'
-            ];
-
-            // Preload all combo sounds
-            const comboAudioObjects = comboSounds.map(soundPath => {
-                const audio = new Audio(soundPath);
-                audio.volume = 0.25;
-                audio.preload = 'auto';
-                return audio;
-            });
-
-            // Function to play random combo sound
-            function playRandomComboSound() {
-                const randomIndex = Math.floor(Math.random() * comboAudioObjects.length);
-                const soundToPlay = comboAudioObjects[randomIndex];
-                soundToPlay.currentTime = 0;
-                soundToPlay.play().catch(error => {
-                    console.log('Combo click audio play prevented:', error);
-                });
-            }
-
-            // Add click sound to all buttons
-            document.querySelectorAll('.btn').forEach(button => {
-                button.addEventListener('click', function(event) {
-                    playRandomComboSound();
-                });
-            });
-
-            // Hover sounds
-            const hoverSound = new Audio('static/sounds/DJScratch.mp3');
-            hoverSound.volume = 0.25;
-            hoverSound.preload = 'auto';
-
-            document.querySelectorAll('.btn').forEach(button => {
-                button.addEventListener('mouseenter', function() {
-                    hoverSound.currentTime = 0;
-                    hoverSound.play().catch(error => {
-                        console.log('Hover audio play prevented:', error);
-                    });
-                });
-            });
-        }
     </script>
 </body>
 </html>
