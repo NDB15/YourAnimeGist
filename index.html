@@ -416,6 +416,37 @@
             color: #FF8C00;
         }
 
+        .loading-bar-container {
+            width: 100%;
+            max-width: 400px;
+            height: 8px;
+            background: rgba(139, 115, 85, 0.2);
+            border-radius: 10px;
+            margin: 15px auto 0 auto;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #FF8C00, #FFA500, #FF8C00);
+            background-size: 200% 100%;
+            border-radius: 10px;
+            animation: loadingProgress 2s ease-in-out infinite, shimmer 1.5s linear infinite;
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.5);
+        }
+
+        @keyframes loadingProgress {
+            0% { width: 20%; }
+            50% { width: 60%; }
+            100% { width: 20%; }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
         .loading {
             text-align: center;
             color: #FF8C00;
@@ -504,6 +535,9 @@
 
             <div class="stats-bar" id="stats">
                 Loading anime database...
+                <div class="loading-bar-container">
+                    <div class="loading-bar"></div>
+                </div>
             </div>
 
             <div class="control-panel">
