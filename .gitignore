@@ -44,6 +44,7 @@ nohup.out
 scraper.log
 scraper_output.txt
 scraper_*.log
+bootstrap_progress.json
 
 # Old files (keep the new structure)
 server.py
