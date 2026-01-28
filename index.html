@@ -273,6 +273,34 @@
         .results-header h2 {
             color: #FF8C00;
             font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .search-bar {
+            margin-top: 15px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            max-width: 500px;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #8B7355;
+            border-radius: 25px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            color: #8B7355;
+        }
+
+        .search-bar input::placeholder {
+            color: #8B7355;
+            opacity: 0.6;
+        }
+
+        .search-bar input:focus {
+            border-color: #FF8C00;
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
         }
 
         .anime-grid {
@@ -546,6 +574,9 @@
             <div class="results-container" id="resultsContainer" style="display: none;">
                 <div class="results-header">
                     <h2 id="resultsCount">0 anime found</h2>
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Search displayed anime by title..." oninput="searchDisplayedAnime()">
+                    </div>
                 </div>
                 <div class="anime-grid" id="animeGrid">
                     <!-- Anime cards will be inserted here -->
@@ -800,6 +831,32 @@
             document.querySelectorAll('#genreSelector input[type="checkbox"]').forEach(cb => cb.checked = false);
         }
 
+        // Search through displayed anime
+        function searchDisplayedAnime() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.anime-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                if (title.includes(searchTerm)) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Update count to show filtered results
+            const resultsCount = document.getElementById('resultsCount');
+            const totalCards = cards.length;
+            if (searchTerm) {
+                resultsCount.textContent = `${visibleCount} of ${totalCards} anime displayed`;
+            } else {
+                resultsCount.textContent = `${totalCards} anime found (showing first 500)`;
+            }
+        }
+
         // Clear filters
         function clearFilters() {
             document.getElementById('minRating').value = '0';
@@ -807,6 +864,7 @@
             document.getElementById('minYear').value = '0';
             document.getElementById('maxYear').value = '9999';
             document.querySelectorAll('#genreSelector input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.getElementById('searchInput').value = '';
             document.getElementById('resultsContainer').style.display = 'none';
             document.getElementById('randomResult').innerHTML = '';
         }
