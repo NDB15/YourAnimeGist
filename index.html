@@ -272,6 +272,33 @@
         .results-header h2 {
             color: #FF8C00;
             font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .search-bar {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #FF8C00;
+            border-radius: 25px;
+            font-size: 16px;
+            font-family: 'AGRevue', Arial, sans-serif;
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .search-bar input:focus {
+            border-color: #FF7700;
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
+        }
+
+        .search-bar input::placeholder {
+            color: #999;
         }
 
         .anime-grid {
@@ -545,6 +572,9 @@
             <div class="results-container" id="resultsContainer" style="display: none;">
                 <div class="results-header">
                     <h2 id="resultsCount">0 anime found</h2>
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Search anime by title..." oninput="searchAnime()">
+                    </div>
                 </div>
                 <div class="anime-grid" id="animeGrid">
                     <!-- Anime cards will be inserted here -->
@@ -558,6 +588,8 @@
         let availableGenres = [];
         let availableYears = [];
         let lastUpdated = null;
+        let currentFilteredResults = [];
+        let currentFilteredResults = [];
 
         // Load anime data from JSON file (client-side)
         async function loadAnimeData() {
@@ -691,6 +723,10 @@
                     return true;
                 });
 
+                document.getElementById('resultsContainer').style.display = 'block';
+                document.getElementById('searchInput').value = ''; // Clear search on new filter
+                currentFilteredResults = filtered; // Store for search functionality
+                
                 document.getElementById('resultsCount').textContent = `${filtered.length.toLocaleString()} anime found`;
                 
                 if (filtered.length === 0) {
@@ -698,15 +734,8 @@
                     return;
                 }
 
-                // Limit display to first 500 for performance
-                const displayLimit = 500;
-                const displayAnime = filtered.slice(0, displayLimit);
-                
-                if (filtered.length > displayLimit) {
-                    document.getElementById('resultsCount').textContent = `${filtered.length.toLocaleString()} anime found (showing first ${displayLimit})`;
-                }
-
-                document.getElementById('animeGrid').innerHTML = displayAnime.map(anime => createAnimeCard(anime)).join('');
+                // Use displayAnimeResults function for consistent display
+                displayAnimeResults(filtered);
             }, 10);
         }
 
@@ -869,6 +898,57 @@
                     });
                 });
             });
+        }
+
+        function searchAnime() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                // No search term, show all filtered results
+                displayAnimeResults(currentFilteredResults);
+                return;
+            }
+            
+            // Search within current filtered results
+            const searchResults = currentFilteredResults.filter(anime => 
+                anime.title.toLowerCase().includes(searchTerm)
+            );
+            
+            displayAnimeResults(searchResults);
+        }
+
+        function displayAnimeResults(results) {
+            const displayLimit = 500;
+            const totalCount = currentFilteredResults.length;
+            const searchCount = results.length;
+            
+            // Update count display
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            if (searchTerm) {
+                document.getElementById('resultsCount').textContent = 
+                    `${searchCount.toLocaleString()} of ${totalCount.toLocaleString()} anime found`;
+            } else {
+                document.getElementById('resultsCount').textContent = 
+                    `${totalCount.toLocaleString()} anime found`;
+            }
+            
+            if (results.length === 0) {
+                document.getElementById('animeGrid').innerHTML = 
+                    '<div class="error-message">No anime found matching your search.</div>';
+                return;
+            }
+            
+            const display = results.slice(0, displayLimit);
+            
+            if (results.length > displayLimit && searchTerm) {
+                document.getElementById('resultsCount').textContent = 
+                    `${searchCount.toLocaleString()} of ${totalCount.toLocaleString()} anime found (showing first ${displayLimit})`;
+            } else if (results.length > displayLimit) {
+                document.getElementById('resultsCount').textContent = 
+                    `${totalCount.toLocaleString()} anime found (showing first ${displayLimit})`;
+            }
+            
+            document.getElementById('animeGrid').innerHTML = display.map(anime => createAnimeCard(anime)).join('');
         }
     </script>
 </body>
