@@ -278,11 +278,17 @@
 
         .search-bar {
             margin-top: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .search-bar input {
-            width: 100%;
-            max-width: 500px;
+            flex: 1;
+            min-width: 250px;
+            max-width: 400px;
             padding: 12px 20px;
             font-size: 16px;
             border: 2px solid #8B7355;
@@ -299,6 +305,39 @@
         }
 
         .search-bar input:focus {
+            border-color: #FF8C00;
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
+        }
+
+        .sort-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sort-control label {
+            color: #8B7355;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .sort-control select {
+            background: rgba(255, 255, 255, 0.95);
+            color: #8B7355;
+            border: 2px solid #8B7355;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .sort-control select:hover {
+            border-color: #FF8C00;
+        }
+
+        .sort-control select:focus {
             border-color: #FF8C00;
             box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
         }
@@ -619,6 +658,18 @@
                     <h2 id="resultsCount">0 anime found</h2>
                     <div class="search-bar">
                         <input type="text" id="searchInput" placeholder="Search all filtered anime by title..." oninput="searchDisplayedAnime()">
+                        <div class="sort-control">
+                            <label for="sortSelect">Sort by:</label>
+                            <select id="sortSelect" onchange="applySortAndDisplay()">
+                                <option value="none">None</option>
+                                <option value="rating-high">Rating: High to Low</option>
+                                <option value="rating-low">Rating: Low to High</option>
+                                <option value="year-new">Year: Newest to Oldest</option>
+                                <option value="year-old">Year: Oldest to Newest</option>
+                                <option value="title-az">Title: A to Z</option>
+                                <option value="title-za">Title: Z to A</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="anime-grid" id="animeGrid">
@@ -631,6 +682,7 @@
     <script>
         let allAnimeData = [];
         let currentFilteredAnime = []; // Store all filtered results for search
+        let currentDisplayAnime = []; // Store currently displayed anime for sorting
         let availableGenres = [];
         let availableYears = [];
         let lastUpdated = null;
@@ -806,6 +858,9 @@
                 // Store all filtered results for search functionality
                 currentFilteredAnime = filtered;
 
+                // Apply current sort before displaying
+                filtered = applySortToArray(filtered);
+
                 document.getElementById('resultsCount').textContent = `${filtered.length.toLocaleString()} anime found`;
                 
                 if (filtered.length === 0) {
@@ -816,6 +871,7 @@
                 // Limit display to first 500 for performance
                 const displayLimit = 500;
                 const displayAnime = filtered.slice(0, displayLimit);
+                currentDisplayAnime = displayAnime;
                 
                 if (filtered.length > displayLimit) {
                     document.getElementById('resultsCount').textContent = `${filtered.length.toLocaleString()} anime found (showing first ${displayLimit})`;
@@ -915,32 +971,81 @@
             document.querySelectorAll('#genreSelector input[type="checkbox"]').forEach(cb => cb.checked = false);
         }
 
+        // Sort array based on current selection
+        function applySortToArray(animeArray) {
+            const sortValue = document.getElementById('sortSelect').value;
+            const sorted = [...animeArray]; // Create copy to avoid mutating original
+            
+            switch(sortValue) {
+                case 'rating-high':
+                    sorted.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
+                    break;
+                case 'rating-low':
+                    sorted.sort((a, b) => parseFloat(a.rating) - parseFloat(b.rating));
+                    break;
+                case 'year-new':
+                    sorted.sort((a, b) => (b.year || 0) - (a.year || 0));
+                    break;
+                case 'year-old':
+                    sorted.sort((a, b) => (a.year || 9999) - (b.year || 9999));
+                    break;
+                case 'title-az':
+                    sorted.sort((a, b) => a.title.localeCompare(b.title));
+                    break;
+                case 'title-za':
+                    sorted.sort((a, b) => b.title.localeCompare(a.title));
+                    break;
+                case 'none':
+                default:
+                    // No sorting, return as-is
+                    break;
+            }
+            
+            return sorted;
+        }
+
+        // Apply sort and refresh display
+        function applySortAndDisplay() {
+            // Re-trigger search to apply sort to current results
+            searchDisplayedAnime();
+        }
+
         // Search through all filtered anime (not just displayed 500)
         function searchDisplayedAnime() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
             
             if (!searchTerm) {
                 // If search is empty, restore original filtered results (first 500)
-                const displayLimit = 500;
-                const displayAnime = currentFilteredAnime.slice(0, displayLimit);
-                document.getElementById('animeGrid').innerHTML = displayAnime.map(anime => createAnimeCard(anime)).join('');
+                let displayAnime = [...currentFilteredAnime];
                 
-                if (currentFilteredAnime.length > displayLimit) {
-                    document.getElementById('resultsCount').textContent = `${currentFilteredAnime.length.toLocaleString()} anime found (showing first ${displayLimit})`;
+                // Apply current sort
+                displayAnime = applySortToArray(displayAnime);
+                
+                const displayLimit = 500;
+                const limitedDisplay = displayAnime.slice(0, displayLimit);
+                currentDisplayAnime = limitedDisplay;
+                document.getElementById('animeGrid').innerHTML = limitedDisplay.map(anime => createAnimeCard(anime)).join('');
+                
+                if (displayAnime.length > displayLimit) {
+                    document.getElementById('resultsCount').textContent = `${displayAnime.length.toLocaleString()} anime found (showing first ${displayLimit})`;
                 } else {
-                    document.getElementById('resultsCount').textContent = `${currentFilteredAnime.length.toLocaleString()} anime found`;
+                    document.getElementById('resultsCount').textContent = `${displayAnime.length.toLocaleString()} anime found`;
                 }
                 return;
             }
 
             // Search through ALL filtered anime
-            const searchResults = currentFilteredAnime.filter(anime => 
+            let searchResults = currentFilteredAnime.filter(anime => 
                 anime.title.toLowerCase().includes(searchTerm)
             );
+
+            // Apply current sort to search results
+            searchResults = applySortToArray(searchResults);
 
             // Display search results (limit to 500)
             const displayLimit = 500;
             const displayAnime = searchResults.slice(0, displayLimit);
+            currentDisplayAnime = displayAnime;
             document.getElementById('animeGrid').innerHTML = displayAnime.map(anime => createAnimeCard(anime)).join('');
 
             // Update count
@@ -959,6 +1064,7 @@
             document.getElementById('maxYear').value = '9999';
             document.querySelectorAll('#genreSelector input[type="checkbox"]').forEach(cb => cb.checked = false);
             document.getElementById('searchInput').value = '';
+            document.getElementById('sortSelect').value = 'none';
             document.getElementById('resultsContainer').style.display = 'none';
             document.getElementById('randomResult').innerHTML = '';
         }
