@@ -432,14 +432,10 @@
             background: linear-gradient(90deg, #FF8C00, #FFA500, #FF8C00);
             background-size: 200% 100%;
             border-radius: 10px;
-            animation: loadingProgress 2s ease-in-out infinite, shimmer 1.5s linear infinite;
+            width: 0%;
+            transition: width 0.3s ease;
+            animation: shimmer 1.5s linear infinite;
             box-shadow: 0 0 10px rgba(255, 140, 0, 0.5);
-        }
-
-        @keyframes loadingProgress {
-            0% { width: 20%; }
-            50% { width: 60%; }
-            100% { width: 20%; }
         }
 
         @keyframes shimmer {
@@ -643,7 +639,43 @@
         async function loadAnimeData() {
             try {
                 const response = await fetch('anime_data.json');
-                allAnimeData = await response.json();
+                const contentLength = response.headers.get('content-length');
+                const total = parseInt(contentLength, 10);
+                let loaded = 0;
+
+                const reader = response.body.getReader();
+                const chunks = [];
+
+                // Update loading bar
+                const loadingBar = document.querySelector('.loading-bar');
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    
+                    if (done) break;
+                    
+                    chunks.push(value);
+                    loaded += value.length;
+                    
+                    // Update progress bar
+                    if (total) {
+                        const percentComplete = Math.round((loaded / total) * 100);
+                        if (loadingBar) {
+                            loadingBar.style.width = percentComplete + '%';
+                        }
+                    }
+                }
+
+                // Combine chunks and parse JSON
+                const chunksAll = new Uint8Array(loaded);
+                let position = 0;
+                for (const chunk of chunks) {
+                    chunksAll.set(chunk, position);
+                    position += chunk.length;
+                }
+                
+                const text = new TextDecoder('utf-8').decode(chunksAll);
+                allAnimeData = JSON.parse(text);
                 
                 // Extract unique genres
                 const genresSet = new Set();
