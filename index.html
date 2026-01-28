@@ -829,7 +829,7 @@
                     ${anime.image_url ? `<img src="${anime.image_url}" alt="${anime.title}" onerror="this.style.display='none'">` : ''}
                     <h3>${anime.title}</h3>
                     <div class="anime-rating">${anime.rating}</div>
-                    <div class="anime-info">${anime.type} | ${anime.episodes}</div>
+                    <div class="anime-info">${anime.type} | ${anime.episodes}${anime.year ? ` | ${anime.year}` : ''}</div>
                     ${anime.genres && anime.genres.length > 0 ? `
                         <div class="anime-genres">
                             ${anime.genres.map(g => `<span class="genre-tag">${g}</span>`).join('')}
