@@ -272,33 +272,6 @@
         .results-header h2 {
             color: #FF8C00;
             font-size: 24px;
-            margin-bottom: 15px;
-        }
-
-        .search-bar {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .search-bar input {
-            width: 100%;
-            padding: 12px 20px;
-            border: 2px solid #FF8C00;
-            border-radius: 25px;
-            font-size: 16px;
-            font-family: 'AGRevue', Arial, sans-serif;
-            outline: none;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-        }
-
-        .search-bar input:focus {
-            border-color: #FF7700;
-            box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
-        }
-
-        .search-bar input::placeholder {
-            color: #999;
         }
 
         .anime-grid {
@@ -488,8 +461,7 @@
             <div class="subtitle">Discover anime from MyAnimeList based on ratings and genres</div>
 
             <div class="stats-bar" id="stats">
-                <span id="loadingIndicator">⏳ Loading data in background...</span>
-                <span id="statsContent" style="display: none;"></span>
+                Loading anime database...
             </div>
 
             <div class="control-panel">
@@ -573,9 +545,6 @@
             <div class="results-container" id="resultsContainer" style="display: none;">
                 <div class="results-header">
                     <h2 id="resultsCount">0 anime found</h2>
-                    <div class="search-bar">
-                        <input type="text" id="searchInput" placeholder="Search anime by title..." oninput="searchAnime()">
-                    </div>
                 </div>
                 <div class="anime-grid" id="animeGrid">
                     <!-- Anime cards will be inserted here -->
@@ -589,72 +558,14 @@
         let availableGenres = [];
         let availableYears = [];
         let lastUpdated = null;
-        let currentFilteredResults = [];
-        let currentFilteredResults = [];
 
         // Load anime data from JSON file (client-side)
         async function loadAnimeData() {
             try {
-                // Check localStorage cache first
-                const cachedData = localStorage.getItem('animeData');
-                const cachedTimestamp = localStorage.getItem('animeDataTimestamp');
-                const cacheMaxAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-                
-                // Use cached data if it exists and is less than 24 hours old
-                if (cachedData && cachedTimestamp) {
-                    const age = Date.now() - parseInt(cachedTimestamp);
-                    if (age < cacheMaxAge) {
-                        console.log('Loading from cache (instant)...');
-                        allAnimeData = JSON.parse(cachedData);
-                        
-                        // Extract unique genres and years
-                        const genresSet = new Set();
-                        const yearsSet = new Set();
-                        allAnimeData.forEach(anime => {
-                            if (anime.genres && Array.isArray(anime.genres)) {
-                                anime.genres.forEach(genre => genresSet.add(genre));
-                            }
-                            if (anime.year) {
-                                yearsSet.add(anime.year);
-                            }
-                        });
-                        availableGenres = Array.from(genresSet).sort();
-                        availableYears = Array.from(yearsSet).sort((a, b) => a - b);
-                        
-                        loadGenres();
-                        loadYears();
-                        updateStats();
-                        
-                        console.log(`Loaded ${allAnimeData.length} anime from cache`);
-                        
-                        // Fetch fresh data in background to update cache
-                        updateCacheInBackground();
-                        return true;
-                    }
-                }
-                
-                // No cache or expired - fetch from server
-                console.log('Fetching fresh data...');
-                const response = await fetch(`anime_data.json?v=${Date.now()}`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
+                const response = await fetch('anime_data.json');
                 allAnimeData = await response.json();
                 
-                // Store in localStorage for next visit
-                try {
-                    localStorage.setItem('animeData', JSON.stringify(allAnimeData));
-                    localStorage.setItem('animeDataTimestamp', Date.now().toString());
-                    console.log('Data cached for next visit');
-                } catch (e) {
-                    console.warn('Could not cache data (localStorage full?):', e);
-                }
-                
-                console.log(`Loaded ${allAnimeData.length} anime from server`);
-                
-                // Extract unique genres and years
+                // Extract unique genres
                 const genresSet = new Set();
                 const yearsSet = new Set();
                 allAnimeData.forEach(anime => {
@@ -672,31 +583,11 @@
                 loadYears();
                 updateStats();
                 
-                console.log('Data loaded successfully');
                 return true;
             } catch (error) {
                 console.error('Error loading anime data:', error);
-                const loadingIndicator = document.getElementById('loadingIndicator');
-                if (loadingIndicator) {
-                    loadingIndicator.innerHTML = '❌ Error loading database. Please refresh the page.';
-                }
+                document.getElementById('stats').innerHTML = 'Error loading anime database. Please refresh the page.';
                 return false;
-            }
-        }
-
-        // Update cache in background after serving cached data
-        async function updateCacheInBackground() {
-            try {
-                console.log('Updating cache in background...');
-                const response = await fetch(`anime_data.json?v=${Date.now()}`);
-                if (response.ok) {
-                    const freshData = await response.json();
-                    localStorage.setItem('animeData', JSON.stringify(freshData));
-                    localStorage.setItem('animeDataTimestamp', Date.now().toString());
-                    console.log('Cache updated with fresh data');
-                }
-            } catch (error) {
-                console.warn('Background cache update failed:', error);
             }
         }
 
@@ -731,19 +622,11 @@
             const avgRating = ratings.length > 0 ? (ratings.reduce((a, b) => a + b, 0) / ratings.length) : 0;
             const totalGenres = availableGenres.length;
             
-            // Hide loading indicator and show stats
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            const statsContent = document.getElementById('statsContent');
-            
-            if (loadingIndicator) loadingIndicator.style.display = 'none';
-            if (statsContent) {
-                statsContent.style.display = 'inline';
-                statsContent.innerHTML = `
-                    Total Anime: ${totalAnime.toLocaleString()} | 
-                    Avg Rating: ${avgRating.toFixed(2)} | 
-                    Genres: ${totalGenres}
-                `;
-            }
+            document.getElementById('stats').innerHTML = `
+                Total Anime: ${totalAnime.toLocaleString()} | 
+                Avg Rating: ${avgRating.toFixed(2)} | 
+                Genres: ${totalGenres}
+            `;
         }
 
         // Get selected genres
@@ -808,10 +691,6 @@
                     return true;
                 });
 
-                document.getElementById('resultsContainer').style.display = 'block';
-                document.getElementById('searchInput').value = ''; // Clear search on new filter
-                currentFilteredResults = filtered; // Store for search functionality
-                
                 document.getElementById('resultsCount').textContent = `${filtered.length.toLocaleString()} anime found`;
                 
                 if (filtered.length === 0) {
@@ -819,8 +698,15 @@
                     return;
                 }
 
-                // Use displayAnimeResults function for consistent display
-                displayAnimeResults(filtered);
+                // Limit display to first 500 for performance
+                const displayLimit = 500;
+                const displayAnime = filtered.slice(0, displayLimit);
+                
+                if (filtered.length > displayLimit) {
+                    document.getElementById('resultsCount').textContent = `${filtered.length.toLocaleString()} anime found (showing first ${displayLimit})`;
+                }
+
+                document.getElementById('animeGrid').innerHTML = displayAnime.map(anime => createAnimeCard(anime)).join('');
             }, 10);
         }
 
@@ -924,22 +810,15 @@
             document.getElementById('randomResult').innerHTML = '';
         }
 
-        // Initialize - start data loading immediately without blocking
-        window.onload = function() {
-            setupSoundEffects();
-            // Load data asynchronously without blocking
-            loadAnimeData();
+        // Initialize
+        window.onload = async function() {
+            const loaded = await loadAnimeData();
+            if (loaded) {
+                setupSoundEffects();
+                // Load all anime by default
+                filterAnime();
+            }
         };
-        
-        // Start loading data as soon as script loads
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                loadAnimeData();
-            });
-        } else {
-            // DOMContentLoaded already fired, load immediately
-            loadAnimeData();
-        }
 
         // Sound effects setup
         function setupSoundEffects() {
@@ -990,57 +869,6 @@
                     });
                 });
             });
-        }
-
-        function searchAnime() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-            
-            if (!searchTerm) {
-                // No search term, show all filtered results
-                displayAnimeResults(currentFilteredResults);
-                return;
-            }
-            
-            // Search within current filtered results
-            const searchResults = currentFilteredResults.filter(anime => 
-                anime.title.toLowerCase().includes(searchTerm)
-            );
-            
-            displayAnimeResults(searchResults);
-        }
-
-        function displayAnimeResults(results) {
-            const displayLimit = 500;
-            const totalCount = currentFilteredResults.length;
-            const searchCount = results.length;
-            
-            // Update count display
-            const searchTerm = document.getElementById('searchInput').value.trim();
-            if (searchTerm) {
-                document.getElementById('resultsCount').textContent = 
-                    `${searchCount.toLocaleString()} of ${totalCount.toLocaleString()} anime found`;
-            } else {
-                document.getElementById('resultsCount').textContent = 
-                    `${totalCount.toLocaleString()} anime found`;
-            }
-            
-            if (results.length === 0) {
-                document.getElementById('animeGrid').innerHTML = 
-                    '<div class="error-message">No anime found matching your search.</div>';
-                return;
-            }
-            
-            const display = results.slice(0, displayLimit);
-            
-            if (results.length > displayLimit && searchTerm) {
-                document.getElementById('resultsCount').textContent = 
-                    `${searchCount.toLocaleString()} of ${totalCount.toLocaleString()} anime found (showing first ${displayLimit})`;
-            } else if (results.length > displayLimit) {
-                document.getElementById('resultsCount').textContent = 
-                    `${totalCount.toLocaleString()} anime found (showing first ${displayLimit})`;
-            }
-            
-            document.getElementById('animeGrid').innerHTML = display.map(anime => createAnimeCard(anime)).join('');
         }
     </script>
 </body>

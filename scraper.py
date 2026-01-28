@@ -186,13 +186,13 @@ class MALScraper:
         print("✅ All anime already have genre data from Jikan API!")
     
     def save_to_json(self, filename='anime_data.json'):
-        """Save scraped data to JSON file (atomic write using temp file, minified for smaller size)"""
+        """Save scraped data to JSON file (atomic write using temp file)"""
         import os
         temp_filename = filename + '.tmp'
         
-        # Write to temp file first (minified - no indentation for smaller file size)
+        # Write to temp file first
         with open(temp_filename, 'w', encoding='utf-8') as f:
-            json.dump(self.anime_data, f, ensure_ascii=False, separators=(',', ':'))
+            json.dump(self.anime_data, f, indent=2, ensure_ascii=False)
         
         # Only replace main file when write is complete
         os.replace(temp_filename, filename)
