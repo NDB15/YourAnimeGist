@@ -575,7 +575,7 @@
                 <div class="results-header">
                     <h2 id="resultsCount">0 anime found</h2>
                     <div class="search-bar">
-                        <input type="text" id="searchInput" placeholder="Search displayed anime by title..." oninput="searchDisplayedAnime()">
+                        <input type="text" id="searchInput" placeholder="Search all filtered anime by title..." oninput="searchDisplayedAnime()">
                     </div>
                 </div>
                 <div class="anime-grid" id="animeGrid">
@@ -587,6 +587,7 @@
 
     <script>
         let allAnimeData = [];
+        let currentFilteredAnime = []; // Store all filtered results for search
         let availableGenres = [];
         let availableYears = [];
         let lastUpdated = null;
@@ -723,6 +724,9 @@
                     return true;
                 });
 
+                // Store all filtered results for search functionality
+                currentFilteredAnime = filtered;
+
                 document.getElementById('resultsCount').textContent = `${filtered.length.toLocaleString()} anime found`;
                 
                 if (filtered.length === 0) {
@@ -831,29 +835,39 @@
             document.querySelectorAll('#genreSelector input[type="checkbox"]').forEach(cb => cb.checked = false);
         }
 
-        // Search through displayed anime
+        // Search through all filtered anime (not just displayed 500)
         function searchDisplayedAnime() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const cards = document.querySelectorAll('.anime-card');
-            let visibleCount = 0;
-
-            cards.forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                if (title.includes(searchTerm)) {
-                    card.style.display = '';
-                    visibleCount++;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                // If search is empty, restore original filtered results (first 500)
+                const displayLimit = 500;
+                const displayAnime = currentFilteredAnime.slice(0, displayLimit);
+                document.getElementById('animeGrid').innerHTML = displayAnime.map(anime => createAnimeCard(anime)).join('');
+                
+                if (currentFilteredAnime.length > displayLimit) {
+                    document.getElementById('resultsCount').textContent = `${currentFilteredAnime.length.toLocaleString()} anime found (showing first ${displayLimit})`;
                 } else {
-                    card.style.display = 'none';
+                    document.getElementById('resultsCount').textContent = `${currentFilteredAnime.length.toLocaleString()} anime found`;
                 }
-            });
+                return;
+            }
 
-            // Update count to show filtered results
-            const resultsCount = document.getElementById('resultsCount');
-            const totalCards = cards.length;
-            if (searchTerm) {
-                resultsCount.textContent = `${visibleCount} of ${totalCards} anime displayed`;
+            // Search through ALL filtered anime
+            const searchResults = currentFilteredAnime.filter(anime => 
+                anime.title.toLowerCase().includes(searchTerm)
+            );
+
+            // Display search results (limit to 500)
+            const displayLimit = 500;
+            const displayAnime = searchResults.slice(0, displayLimit);
+            document.getElementById('animeGrid').innerHTML = displayAnime.map(anime => createAnimeCard(anime)).join('');
+
+            // Update count
+            if (searchResults.length > displayLimit) {
+                document.getElementById('resultsCount').textContent = `${searchResults.length.toLocaleString()} results for "${searchTerm}" (showing first ${displayLimit})`;
             } else {
-                resultsCount.textContent = `${totalCards} anime found (showing first 500)`;
+                document.getElementById('resultsCount').textContent = `${searchResults.length.toLocaleString()} results for "${searchTerm}"`;
             }
         }
 
