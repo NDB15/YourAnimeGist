@@ -594,9 +594,47 @@
         // Load anime data from JSON file (client-side)
         async function loadAnimeData() {
             try {
-                // Add cache-busting parameter to ensure fresh data
-                const timestamp = new Date().getTime();
-                const response = await fetch(`anime_data.json?v=${timestamp}`);
+                // Check localStorage cache first
+                const cachedData = localStorage.getItem('animeData');
+                const cachedTimestamp = localStorage.getItem('animeDataTimestamp');
+                const cacheMaxAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+                
+                // Use cached data if it exists and is less than 24 hours old
+                if (cachedData && cachedTimestamp) {
+                    const age = Date.now() - parseInt(cachedTimestamp);
+                    if (age < cacheMaxAge) {
+                        console.log('Loading from cache (instant)...');
+                        allAnimeData = JSON.parse(cachedData);
+                        
+                        // Extract unique genres and years
+                        const genresSet = new Set();
+                        const yearsSet = new Set();
+                        allAnimeData.forEach(anime => {
+                            if (anime.genres && Array.isArray(anime.genres)) {
+                                anime.genres.forEach(genre => genresSet.add(genre));
+                            }
+                            if (anime.year) {
+                                yearsSet.add(anime.year);
+                            }
+                        });
+                        availableGenres = Array.from(genresSet).sort();
+                        availableYears = Array.from(yearsSet).sort((a, b) => a - b);
+                        
+                        loadGenres();
+                        loadYears();
+                        updateStats();
+                        
+                        console.log(`Loaded ${allAnimeData.length} anime from cache`);
+                        
+                        // Fetch fresh data in background to update cache
+                        updateCacheInBackground();
+                        return true;
+                    }
+                }
+                
+                // No cache or expired - fetch from server
+                console.log('Fetching fresh data...');
+                const response = await fetch(`anime_data.json?v=${Date.now()}`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -604,9 +642,18 @@
                 
                 allAnimeData = await response.json();
                 
-                console.log(`Loaded ${allAnimeData.length} anime from database`);
+                // Store in localStorage for next visit
+                try {
+                    localStorage.setItem('animeData', JSON.stringify(allAnimeData));
+                    localStorage.setItem('animeDataTimestamp', Date.now().toString());
+                    console.log('Data cached for next visit');
+                } catch (e) {
+                    console.warn('Could not cache data (localStorage full?):', e);
+                }
                 
-                // Extract unique genres
+                console.log(`Loaded ${allAnimeData.length} anime from server`);
+                
+                // Extract unique genres and years
                 const genresSet = new Set();
                 const yearsSet = new Set();
                 allAnimeData.forEach(anime => {
@@ -630,6 +677,22 @@
                 console.error('Error loading anime data:', error);
                 document.getElementById('stats').innerHTML = 'Error loading anime database. Please refresh the page.';
                 return false;
+            }
+        }
+
+        // Update cache in background after serving cached data
+        async function updateCacheInBackground() {
+            try {
+                console.log('Updating cache in background...');
+                const response = await fetch(`anime_data.json?v=${Date.now()}`);
+                if (response.ok) {
+                    const freshData = await response.json();
+                    localStorage.setItem('animeData', JSON.stringify(freshData));
+                    localStorage.setItem('animeDataTimestamp', Date.now().toString());
+                    console.log('Cache updated with fresh data');
+                }
+            } catch (error) {
+                console.warn('Background cache update failed:', error);
             }
         }
 
