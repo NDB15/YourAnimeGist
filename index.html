@@ -488,7 +488,8 @@
             <div class="subtitle">Discover anime from MyAnimeList based on ratings and genres</div>
 
             <div class="stats-bar" id="stats">
-                Loading anime database...
+                <span id="loadingIndicator">⏳ Loading data in background...</span>
+                <span id="statsContent" style="display: none;"></span>
             </div>
 
             <div class="control-panel">
@@ -675,7 +676,10 @@
                 return true;
             } catch (error) {
                 console.error('Error loading anime data:', error);
-                document.getElementById('stats').innerHTML = 'Error loading anime database. Please refresh the page.';
+                const loadingIndicator = document.getElementById('loadingIndicator');
+                if (loadingIndicator) {
+                    loadingIndicator.innerHTML = '❌ Error loading database. Please refresh the page.';
+                }
                 return false;
             }
         }
@@ -727,11 +731,19 @@
             const avgRating = ratings.length > 0 ? (ratings.reduce((a, b) => a + b, 0) / ratings.length) : 0;
             const totalGenres = availableGenres.length;
             
-            document.getElementById('stats').innerHTML = `
-                Total Anime: ${totalAnime.toLocaleString()} | 
-                Avg Rating: ${avgRating.toFixed(2)} | 
-                Genres: ${totalGenres}
-            `;
+            // Hide loading indicator and show stats
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const statsContent = document.getElementById('statsContent');
+            
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
+            if (statsContent) {
+                statsContent.style.display = 'inline';
+                statsContent.innerHTML = `
+                    Total Anime: ${totalAnime.toLocaleString()} | 
+                    Avg Rating: ${avgRating.toFixed(2)} | 
+                    Genres: ${totalGenres}
+                `;
+            }
         }
 
         // Get selected genres
@@ -912,13 +924,22 @@
             document.getElementById('randomResult').innerHTML = '';
         }
 
-        // Initialize
-        window.onload = async function() {
-            const loaded = await loadAnimeData();
-            if (loaded) {
-                setupSoundEffects();
-            }
+        // Initialize - start data loading immediately without blocking
+        window.onload = function() {
+            setupSoundEffects();
+            // Load data asynchronously without blocking
+            loadAnimeData();
         };
+        
+        // Start loading data as soon as script loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                loadAnimeData();
+            });
+        } else {
+            // DOMContentLoaded already fired, load immediately
+            loadAnimeData();
+        }
 
         // Sound effects setup
         function setupSoundEffects() {
