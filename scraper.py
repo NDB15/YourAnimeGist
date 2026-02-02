@@ -22,6 +22,10 @@ class MALScraper:
         """
         start_mal_id = 1
         
+        # Clear existing data on full refresh to prevent duplicates
+        if not incremental:
+            self.anime_data = []
+        
         if incremental and self.anime_data:
             # Get highest MAL ID from existing data
             start_mal_id = max(a['mal_id'] for a in self.anime_data if a.get('mal_id')) + 1
@@ -86,9 +90,20 @@ class MALScraper:
                         'image_url': image_url
                     }
                     
-                    self.anime_data.append(anime_info)
-                    new_anime_count += 1
-                    print(f"Fetched: {anime_info['title']} (Rating: {anime_info['rating']})")
+                    # Check for duplicates by mal_id
+                    existing_anime = None
+                    if mal_id:
+                        existing_anime = next((a for a in self.anime_data if a.get('mal_id') == mal_id), None)
+                    
+                    if existing_anime:
+                        # Update existing entry with latest data (e.g., updated ratings)
+                        existing_anime.update(anime_info)
+                        print(f"Updated: {anime_info['title']} (Rating: {anime_info['rating']})")
+                    else:
+                        # Add new anime
+                        self.anime_data.append(anime_info)
+                        new_anime_count += 1
+                        print(f"Fetched: {anime_info['title']} (Rating: {anime_info['rating']})")
                 
                 # In incremental mode, if we got no new anime this page, we're done
                 if incremental and new_anime_count == 0:
@@ -199,14 +214,33 @@ class MALScraper:
         print(f"Data saved to {filename}")
     
     def load_from_json(self, filename='anime_data.json'):
-        """Load data from JSON file"""
+        """Load data from JSON file and remove duplicates"""
         try:
             with open(filename, 'r', encoding='utf-8') as f:
                 content = f.read().strip()
                 if not content or content == '[]' or content == '{}':
                     print(f"File {filename} exists but is empty or invalid")
                     return []
-                self.anime_data = json.loads(content)
+                loaded_data = json.loads(content)
+            
+            # Deduplicate by mal_id (keep the last occurrence which is usually most recent)
+            seen_ids = {}
+            for anime in loaded_data:
+                mal_id = anime.get('mal_id')
+                if mal_id:
+                    seen_ids[mal_id] = anime
+                else:
+                    # For anime without mal_id, use title as fallback
+                    title = anime.get('title', '')
+                    if title:
+                        seen_ids[f"title_{title}"] = anime
+            
+            self.anime_data = list(seen_ids.values())
+            
+            duplicates_removed = len(loaded_data) - len(self.anime_data)
+            if duplicates_removed > 0:
+                print(f"🔧 Removed {duplicates_removed} duplicate entries")
+            
             print(f"Loaded {len(self.anime_data)} anime from {filename}")
             return self.anime_data
         except FileNotFoundError:
