@@ -567,6 +567,14 @@
         <div class="content-area">
             <h1>YourAnimeGist</h1>
             <div class="subtitle">Discover anime from MyAnimeList based on ratings and genres<br>Not affiliated with MyAnimeList</div>
+            
+            <div class="language-selector">
+                <label for="languageSelect">Display Language:</label>
+                <select id="languageSelect" onchange="changeLanguage()">
+                    <option value="english">English</option>
+                    <option value="romaji">Romaji (Japanese)</option>
+                </select>
+            </div>
 
             <div class="stats-bar" id="stats">
                 Loading anime database...
@@ -657,7 +665,7 @@
                 <div class="results-header">
                     <h2 id="resultsCount">0 anime found</h2>
                     <div class="search-bar">
-                        <input type="text" id="searchInput" placeholder="Search all filtered anime by title..." oninput="searchDisplayedAnime()">
+                        <input type="text" id="searchInput" placeholder="Search by English or Japanese title..." oninput="searchDisplayedAnime()">
                         <div class="sort-control">
                             <label for="sortSelect">Sort by:</label>
                             <select id="sortSelect" onchange="applySortAndDisplay()">
@@ -681,11 +689,12 @@
 
     <script>
         let allAnimeData = [];
-        let currentFilteredAnime = []; // Store all filtered results for search
-        let currentDisplayAnime = []; // Store currently displayed anime for sorting
+        let currentFilteredAnime = [];
+        let currentDisplayAnime = [];
         let availableGenres = [];
         let availableYears = [];
         let lastUpdated = null;
+        let currentLanguage = 'english';
 
         // Load anime data from JSON file (client-side)
         async function loadAnimeData() {
@@ -925,11 +934,12 @@
 
                 const randomIndex = Math.floor(Math.random() * filtered.length);
                 const anime = filtered[randomIndex];
+                const displayTitle = getDisplayTitle(anime);
                 
                 document.getElementById('randomResult').innerHTML = `
                     <div class="random-result">
-                        <h2>${anime.title}</h2>
-                        ${anime.image_url ? `<img src="${anime.image_url}" alt="${anime.title}" onerror="this.style.display='none'">` : ''}
+                        <h2>${displayTitle}</h2>
+                        ${anime.image_url ? `<img src="${anime.image_url}" alt="${displayTitle}" onerror="this.style.display='none'">` : ''}
                         <div class="anime-rating">${anime.rating}</div>
                         <div class="anime-info">${anime.type} | ${anime.episodes}</div>
                         ${anime.genres && anime.genres.length > 0 ? `
@@ -945,11 +955,43 @@
         }
 
         // Create anime card HTML
+        function changeLanguage() {
+            currentLanguage = document.getElementById('languageSelect').value;
+            // Refresh the display with new language
+            if (currentDisplayAnime.length > 0) {
+                document.getElementById('animeGrid').innerHTML = currentDisplayAnime.map(anime => createAnimeCard(anime)).join('');
+            }
+        }
+
+        function getDisplayTitle(anime) {
+            if (currentLanguage === 'english') {
+                return anime.title_english || anime.title;
+            } else {
+                return anime.title;
+            }
+        }
+
+        function changeLanguage() {
+            currentLanguage = document.getElementById('languageSelect').value;
+            if (currentDisplayAnime.length > 0) {
+                document.getElementById('animeGrid').innerHTML = currentDisplayAnime.map(anime => createAnimeCard(anime)).join('');
+            }
+        }
+
+        function getDisplayTitle(anime) {
+            if (currentLanguage === 'english') {
+                return anime.title_english || anime.title;
+            } else {
+                return anime.title;
+            }
+        }
+
         function createAnimeCard(anime) {
+            const displayTitle = getDisplayTitle(anime);
             return `
                 <div class="anime-card" onclick="window.open('${anime.url}', '_blank')">
-                    ${anime.image_url ? `<img src="${anime.image_url}" alt="${anime.title}" onerror="this.style.display='none'">` : ''}
-                    <h3>${anime.title}</h3>
+                    ${anime.image_url ? `<img src="${anime.image_url}" alt="${displayTitle}" onerror="this.style.display='none'">` : ''}
+                    <h3>${displayTitle}</h3>
                     <div class="anime-rating">${anime.rating}</div>
                     <div class="anime-info">${anime.type} | ${anime.episodes}${anime.year ? ` | ${anime.year}` : ''}</div>
                     ${anime.genres && anime.genres.length > 0 ? `
@@ -1034,10 +1076,13 @@
                 return;
             }
 
-            // Search through ALL filtered anime
-            let searchResults = currentFilteredAnime.filter(anime => 
-                anime.title.toLowerCase().includes(searchTerm)
-            );
+            // Search through ALL filtered anime (both English and Japanese titles)
+            let searchResults = currentFilteredAnime.filter(anime => {
+                const englishTitle = anime.title_english || anime.title;
+                const romajiTitle = anime.title || '';
+                return englishTitle.toLowerCase().includes(searchTerm) || 
+                       romajiTitle.toLowerCase().includes(searchTerm);
+            });
 
             // Apply current sort to search results
             searchResults = applySortToArray(searchResults);

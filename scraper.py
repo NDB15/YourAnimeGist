@@ -78,8 +78,12 @@ class MALScraper:
                     if anime.get('images') and anime['images'].get('jpg'):
                         image_url = anime['images']['jpg'].get('large_image_url') or anime['images']['jpg'].get('image_url', '')
                     
+                    # Extract English title
+                    title_english = anime.get('title_english') or anime.get('title')
+                    
                     anime_info = {
                         'title': anime.get('title', 'Unknown'),
+                        'title_english': title_english,
                         'rating': anime.get('score', 0.0) or 0.0,
                         'type': anime.get('type', 'Unknown'),
                         'episodes': f"{anime.get('episodes', '?')} eps" if anime.get('episodes') else 'Unknown',
