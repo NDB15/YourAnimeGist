@@ -45,6 +45,10 @@ scraper.log
 scraper_output.txt
 scraper_*.log
 bootstrap_progress.json
+seriesgraph.log
+
+# SeriesGraph cache
+seriesgraph_cache.json
 
 # Old files (keep the new structure)
 server.py

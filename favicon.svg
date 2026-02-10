@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <style>
+      @font-face {
+        font-family: 'AGRevue';
+        src: url('fonts/AGRevueCyr Roman Medium.ttf') format('truetype');
+      }
+    </style>
+  </defs>
+  <!-- Light brown background matching website -->
+  <rect width="100" height="100" fill="#f5f0e6" rx="10"/>
+  
+  <!-- YAG text in dark brown with AGRevue font -->
+  <text x="50" y="70" font-family="'AGRevue', Arial, sans-serif" font-size="38" font-weight="600" fill="#8B7355" text-anchor="middle">YAG</text>
+</svg>
