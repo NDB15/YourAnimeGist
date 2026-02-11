@@ -45,7 +45,7 @@ def scrape_all_seriesgraph_shows():
         try:
             response = requests.get(url, headers={
                 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-            }, timeout=10)
+            }, timeout=30)
             
             if response.status_code != 200:
                 print(f"[{datetime.now().strftime('%H:%M:%S')}] Page {page} returned status {response.status_code}, stopping.")
@@ -71,8 +71,9 @@ def scrape_all_seriesgraph_shows():
                         show_id = parts[0]
                         slug = parts[1]
                         
-                        # Get show title from link text or slug
-                        title = link.get_text(strip=True) or slug.replace('-', ' ').title()
+                        # Convert slug to full title (slugs have complete titles)
+                        # e.g., "frieren-beyond-journeys-end" -> "Frieren Beyond Journeys End"
+                        title = slug.replace('-', ' ').title()
                         
                         show_data = {
                             'id': show_id,
